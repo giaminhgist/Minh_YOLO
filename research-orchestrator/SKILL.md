@@ -5,7 +5,7 @@ description: Task classifier, skill router, and workflow orchestrator for AI/DL/
 
 # Research Orchestrator
 
-This orchestrator does NOT copy upstream skills. It classifies requests, routes to the right upstream skill via `SKILL_INDEX.md` (same directory), and controls how the work runs. Upstream repos live under `~/.claude/upstream/` and are immutable — read them, never edit them; update via `git pull` + sync script (see `INSTALL.md` in this directory).
+This orchestrator does NOT copy upstream skills. It classifies requests, routes to the right upstream skill via `SKILL_INDEX.md` (same directory), and controls how the work runs. Upstream repos live under `~/.claude/upstream/` and are immutable — read them, never edit them; cài đặt/cập nhật theo từng repo (see `INSTALL.md` in this directory).
 
 ## 1. Task classifier
 
@@ -24,8 +24,8 @@ Routing rules (mandatory, in order):
 
 1. **Look up the task category in `SKILL_INDEX.md` Part 1.** Read the matched skill's SKILL.md before executing it — never route by name alone.
 2. **Priority order**: `domain-specific` > `research-specific` > `specialized coding/research` > `generic`.
-   - Example: training NaN/divergence → `~/.claude/skills/aris-training-check/SKILL.md` (ML-domain) before `sp-systematic-debugging` (generic).
-   - Example: figure for a paper → `ns-nature-figure` (domain: Nature-standard) over a generic plotting path.
+   - Example: training NaN/divergence → `~/.claude/skills/training-check/SKILL.md` (ML-domain) before `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/systematic-debugging/SKILL.md` (generic).
+   - Example: figure for a paper → `~/.claude/skills/nature-figure/SKILL.md` (domain: Nature-standard) over a generic plotting path.
 3. **One PRIMARY per capability cluster** (see SKILL_INDEX Part 2). Do not load multiple overlapping skills "just in case". Add a SECONDARY only when the PRIMARY is unavailable; add COMPLEMENTARY only when it adds clearly distinct value.
 4. **FALLBACK and SPECIAL-CASE skills** are never default-routed; state the reason when routing to them.
 5. **Upstream skill prerequisites**: many ARIS skills embed cross-model review (Codex MCP, floor `xhigh`). If the reviewer backend is missing, degrade per the upstream skill's own policy (usually `REVIEW_UNAVAILABLE`) — never fake cross-model independence, never run a verdict-bearing skill on a timer/`/loop`/CronCreate wrapper.
@@ -62,22 +62,22 @@ Idea Discovery → Idea Proposal/Refinement → Literature Review → Novelty Ch
 - A stage is complete only when its evidence artifacts exist (§7).
 - **Return edges are allowed and required when evidence demands them**: Experiment ↔ Debugging ↔ Code Optimization ↔ Experiment Refinement. A negative result that invalidates the hypothesis returns to Idea Refinement; a reviewer concern about missing ablations returns to Experiment Plan. Never paper over a failed stage to "move forward".
 
-For an autonomous end-to-end run, `aris-research-pipeline` (W1→W1.5→W2→W3) is the canonical upstream engine; `or-autoresearch` is the alternative two-loop engine. Both require a loop-capable host and GPU/API budgets — state the cost expectation before starting.
+For an autonomous end-to-end run, `~/.claude/skills/research-pipeline/SKILL.md` (W1→W1.5→W2→W3) is the canonical upstream engine; `~/.claude/skills/0-autoresearch-skill/SKILL.md` is the alternative two-loop engine. Both require a loop-capable host and GPU/API budgets — state the cost expectation before starting.
 
 ### 3.3 GRANT branch (separate workflow — never mixed with the paper loop)
 
 Idea → Literature/Gap → Preliminary Evidence → Research Objectives → Work Packages → Methodology → Risk/Mitigation → Budget/Resources → Impact → Grant Writing → Grant Review → Revision
 
-- Route to `aris-grant-proposal`; add `arf-review-grant` for the review stage and `cs-grants` for NIH-oriented searches.
+- Route to `~/.claude/skills/grant-proposal/SKILL.md`; add `~/.claude/skills/review-grant/SKILL.md` for the review stage and `~/.claude/plugins/marketplaces/claude-code-skills/research/grants/skills/grants/SKILL.md` for NIH-oriented searches.
 - **A grant is not a paper.** It argues future work (feasibility + expected impact + risk management). Budget numbers and PI credentials are placeholders — never fabricated.
 
 ### 3.4 PUBLICATION track
 
 Results → Claim–Evidence Map → Paper Outline → Introduction/Related Work → Methodology → Experiments → Results → Discussion → Figures/Tables → Citation Verification → Reviewer Simulation → Revision → Final Integrity Check
 
-- Drafting discipline: `ss-paper-writer` evidence rules (L0–L4) + `or-ml-paper-writing` for ML venues + `aris-paper-writing` pipeline for end-to-end.
+- Drafting discipline: `~/.claude/skills/paper-writer/SKILL.md` evidence rules (L0–L4) + `~/.claude/skills/ml-paper-writing/SKILL.md` for ML venues + `~/.claude/skills/paper-writing/SKILL.md` pipeline for end-to-end.
 - **Never fabricate**: results, citations, metrics, statistical claims, experiment settings. The citation workflow is always DBLP → CrossRef → [VERIFY]; never BibTeX from memory.
-- Pre-submission: `aris-paper-claim-audit` → `aris-citation-audit` → `ss-pre-submission-reviewer` (or `aris-auto-review-loop` when a cross-model reviewer is configured) → `aris-integrity-forensics` for high-stakes submissions.
+- Pre-submission: `~/.claude/skills/paper-claim-audit/SKILL.md` → `~/.claude/skills/citation-audit/SKILL.md` → `~/.claude/skills/pre-submission-reviewer/SKILL.md` (or `~/.claude/skills/auto-review-loop/SKILL.md` when a cross-model reviewer is configured) → `~/.claude/skills/integrity-forensics/SKILL.md` for high-stakes submissions.
 
 ## 4. Progressive skill loading
 
@@ -100,7 +100,7 @@ Treat context as a limited attention budget. Classify information:
 - **ARCHIVAL** — possibly useful later. Move to files (`research-wiki/`, experiment logs, `.inspection/`) and reference by path.
 - **IRRELEVANT** — drop.
 
-Compaction triggers: context > ~70–80% of the window, or when a stage finishes. Never prune anything whose loss could change scientific interpretation, code behavior, experiment reproducibility, or user intent. Never compress tool definitions. (For the full machinery, `ctx-context-fundamentals` / `ctx-context-compression` / `ctx-context-optimization`.)
+Compaction triggers: context > ~70–80% of the window, or when a stage finishes. Never prune anything whose loss could change scientific interpretation, code behavior, experiment reproducibility, or user intent. Never compress tool definitions. (For the full machinery, `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/context-fundamentals/SKILL.md` / `…/context-compression/SKILL.md` / `…/context-optimization/SKILL.md`.)
 
 For long tasks, maintain a compact state representation and re-emit it at stage boundaries:
 
@@ -120,9 +120,9 @@ Goal | Current task | Completed | Important decisions | Relevant files | Experim
 
 - **Nothing is "done" because code was written or text was drafted.** Completion requires verification appropriate to the task:
   - Code: fresh run output / tests / diff review.
-  - Experiments: result files exist and parse; numbers match logs (`arf-audit-analysis` discipline: file+line+quote, CONFIRMED/SUSPECTED).
-  - Claims: evidence exists in raw results (`aris-result-to-claim` before any claim enters prose).
-  - Paper: compiled PDF; numbers audited (`aris-paper-claim-audit`); bibliography audited (`aris-citation-audit`).
+  - Experiments: result files exist and parse; numbers match logs (`~/.claude/skills/audit-analysis/SKILL.md` discipline: file+line+quote, CONFIRMED/SUSPECTED).
+  - Claims: evidence exists in raw results (`~/.claude/skills/result-to-claim/SKILL.md` before any claim enters prose).
+  - Paper: compiled PDF; numbers audited (`~/.claude/skills/paper-claim-audit/SKILL.md`); bibliography audited (`~/.claude/skills/citation-audit/SKILL.md`).
   - Review/verdict: independent reviewer, not self-assessment ("Never adjudicate your own verification").
   - Task loop: visible checklist (§8) — no silent completion of multiple major tasks.
 - Distinguish: **observation** (what the data show) vs **interpretation** (what that means) vs **hypothesis** vs **claim** (what we assert in writing). Claims must trace to experimental evidence, a figure/table, a citation, or a mathematical argument.
