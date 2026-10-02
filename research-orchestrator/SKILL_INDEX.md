@@ -4,11 +4,26 @@ Routing table + resolved skill inventory for the AI Research Agent (AI / Deep Le
 
 Built from full-content inspection of all 12 upstream repositories (reports in `.inspection/`). Every path below is the **installed** location (`~/.claude/skills/…`); the corresponding upstream source paths were verified on disk on 2026-10-02.
 
-## Path conventions
+## Path conventions — vị trí cài thực tế (theo hướng dẫn của từng repo)
 
-- **Installed skills** (user level): `~/.claude/skills/<prefix>-<skill>/SKILL.md`. Cài đặt/cập nhật: `~/.claude/skills/research-orchestrator/INSTALL.md`.
-- Upstream repositories live under `~/.claude/upstream/` and are **immutable**: keep their git remotes so they can be updated with `git pull`. Never edit them; put overrides in the orchestrator.
-- `ARIS` = `~/.claude/upstream/auto-claude-code-research-in-sleep`, `OR` = `~/.claude/upstream/AI-Research-SKILLs`, `SP` = `~/.claude/upstream/superpowers`, `ARF` = `~/.claude/upstream/AI-research-feedback`, `NS` = `~/.claude/upstream/natureskills`, `AAS` = `~/.claude/upstream/agentic-awesome-skills`, `CS` = `~/.claude/upstream/claude-skills`, `SS` = `~/.claude/upstream/Supervisor-Skills`, `CTX` = `~/.claude/upstream/agent-skills-for-context-engineering`, `TK` = `~/.claude/upstream/awesome-claude-code-toolkit`, `HZ` = `~/.claude/upstream/humanizer`.
+| Repo | Cách cài (của tác giả) | Skill path sau khi cài |
+|---|---|---|
+| auto-claude-code-research-in-sleep (ARIS) | `cp -r skills/* ~/.claude/skills/` | `~/.claude/skills/<name>/SKILL.md` (+ `~/.claude/skills/shared-references/` cùng cấp) |
+| AI-Research-SKILLs (OR) | `npx @orchestra-research/ai-research-skills install --all` | `~/.claude/skills/<name>/SKILL.md` (symlink → `~/.orchestra/skills/<cat>/<name>/SKILL.md`) |
+| superpowers (SP) | plugin `superpowers@superpowers-marketplace` | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/<name>/SKILL.md` |
+| AI-research-feedback (ARF) | `cp -R Skills/. ~/.claude/skills/` | `~/.claude/skills/<name>/SKILL.md` |
+| natureskills (NS) | copy các thư mục `nature-*` (repo không có installer) | `~/.claude/skills/nature-<x>/SKILL.md` |
+| agentic-awesome-skills (AAS) | plugin `agentic-awesome-skills@agentic-awesome-skills` | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/<name>/SKILL.md` (skill ngoài plugin-safe subset → `~/.claude/upstream/…`) |
+| claude-skills (CS) | 16 plugin `<tên>@claude-code-skills` | `~/.claude/plugins/marketplaces/claude-code-skills/<domain>/…/SKILL.md` (ngoài plugin → `~/.claude/upstream/claude-skills/…`) |
+| Supervisor-Skills (SS) | copy `skills/*` vào assistant (README; skills CLI cần Node ≥ 20) | `~/.claude/skills/<name>/SKILL.md` |
+| awesome-agent-skills | curated list — **không có gì để cài** | — |
+| humanizer (HZ) | plugin `humanizer@humanizer` | `~/.claude/plugins/marketplaces/humanizer/SKILL.md` (gọi `/humanizer:humanizer`) |
+| agent-skills-for-context-engineering (CTX) | plugin `context-engineering@context-engineering-marketplace` | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/<name>/SKILL.md` |
+| awesome-claude-code-toolkit (TK) | manual clone `~/.claude/plugins/claude-code-toolkit` + `setup/install.sh` + copy skills/agents | skills: `~/.claude/skills/<name>/SKILL.md` · agents: `~/.claude/agents/<name>.md` |
+
+- **Upstream sources** (immutable — `git pull` ở đây): `~/.claude/upstream/<repo>/`. ARIS helpers: `~/.claude/skills/shared-references/` + `~/.aris/repo`.
+- Cài đặt từ máy mới / cập nhật: `~/.claude/skills/research-orchestrator/INSTALL.md`.
+- Alias repo: `ARIS` = auto-claude-code-research-in-sleep, `OR` = AI-Research-SKILLs, `SP` = superpowers, `ARF` = AI-research-feedback, `NS` = natureskills, `AAS` = agentic-awesome-skills, `CS` = claude-skills, `SS` = Supervisor-Skills, `CTX` = agent-skills-for-context-engineering, `TK` = awesome-claude-code-toolkit, `HZ` = humanizer.
 
 ## Priority semantics
 
@@ -29,27 +44,27 @@ Do not load multiple skills that serve the same function unless each adds clearl
 
 | Task Category | Preferred Skill | Repository | Exact Path | Priority | Use When | Avoid When | Complementary Skills |
 |---|---|---|---|---|---|---|---|
-| **Idea Discovery** | idea-creator (standalone); idea-discovery (full W1 pipeline) | ARIS | `~/.claude/skills/aris-idea-creator/SKILL.md` | PRIMARY | A direction exists and concrete, pilot-testable ideas are needed; user asks to brainstorm / discover ideas | Idea already chosen (→ refine); no compute for pilots; cross-model reviewer backend (Codex MCP) unavailable → verdict gates become BLOCKED | OR `21-research-ideation/brainstorming-research-ideas`, OR `21-research-ideation/creative-thinking-for-research`, SP `brainstorming`, CS `research/pulse`, ARIS `research-lit` (input) |
-| **Idea Proposal / Refinement** | research-refine (+ research-refine-pipeline for one-shot with experiment plan) | ARIS | `~/.claude/skills/aris-research-refine/SKILL.md` | PRIMARY | Vague problem + approach must become an anchored, frontier-aware method proposal (frozen Problem Anchor, complexity budget, ≤5 review rounds) | Method already concrete (→ experiment-plan); reviewer backend unavailable | SS `idea-evaluator` (fatal-flaw audit F1–F10 + verdict), SP `brainstorming` (clarification gates) |
-| **Novelty Check** | novelty-check | ARIS | `~/.claude/skills/aris-novelty-check/SKILL.md` | PRIMARY | Idea must be checked against recent literature before implementation; 3–5 core claims, ≥3 query formulations per claim, ABANDON must name the paper | No concrete method description yet; routine literature search without a novelty question | SS `idea-evaluator` ("'not found' does not prove novelty"), CS `research/dossier` (≥30% disconfirming-query budget), ARIS `patent-novelty-check` (SPECIAL-CASE, legal standard, patent track only) |
-| **Literature Review** | research-lit (retrieval/synthesis) + SS deep-research (rigorous deep surveys) | ARIS / SS | `~/.claude/skills/aris-research-lit/SKILL.md` | PRIMARY | Multi-source literature review with KB-first search, anti-hallucination verification of every hit; deep research with frozen RQs and adversarial perspectives | Reading one known paper (→ alphaxiv/deepxiv); auditing an existing bibliography (→ citation-audit) | Retrieval: ARIS `arxiv`, `semantic-scholar`, `deepxiv`, `alphaxiv`, `openalex`, `exa-search`, `gemini-search`; Biomedical: CS `research/litreview` (PubMed E-utilities + OpenAlex, PICO/SPIDER), AAS `papers-skill` (Semantic Scholar + arXiv CLI), AAS `ii-commons` (arXiv/PubMed-PMC/US-policy, deterministic), AAS `hugging-face-papers`; Reading protocols: CS `research/deepread`, AAS `dsh-deepread`, ARF `pdf-to-markdown`; TK `agents/research-analysis/deep-dive` |
-| **Experiment Planning / Design** | experiment-plan + ablation-planner | ARIS | `~/.claude/skills/aris-experiment-plan/SKILL.md` | PRIMARY | Turn a refined proposal into a claim-driven, paper-oriented roadmap (Claim Map, MAX_PRIMARY_CLAIMS=2, MAX_CORE_BLOCKS=5, anti-claim, M0–M4 run order, DEFAULT_SEEDS=3); ablation design from reviewer perspective | Method not yet stable (→ refine); single known experiment | CS `research-ops/skills/clinical-research` (ICH E9(R1) estimand-first design, sample-size estimator — medical/clinical studies), CS `engineering-team/skills/senior-data-scientist` (A/B design, SRM check), SS `benchmark-paper-template` (benchmark papers), TK `agents/research-analysis/academic-researcher` (PICO, CONSORT/PRISMA/STROBE) |
-| **Statistical Planning** | statistical-analyst | CS | `~/.claude/skills/cs-statistical-analyst/SKILL.md` | PRIMARY | Hypothesis testing design: Welch over Student's, Wilson CI, multiplicity/peeking/Simpson's/SUTVA flags, refuses n<30 without normality, Ship/Hold/Extend/Kill verdicts | None within its scope | ARF `review-pap` (power/multiple-testing review of existing analyses), ARF `audit-analysis` (CONFIRMED/SUSPECTED evidence tags), ARIS `analyze-results` (seed mean±std, delta-vs-baseline), AAS `scanpy` (biomedical single-cell statistics) |
-| **Code Planning** | writing-plans (+ subagent-driven-development when parallelizing) | SP | `~/.claude/skills/sp-writing-plans/SKILL.md` | PRIMARY | Multi-step implementation needs a reviewed plan with per-step verification checks | Trivial single-file changes | CS `engineering/zero-hallucination-coder` (Discuss→Map→Decompose; split if >300 lines / >3 files / >2 acceptance criteria), ARIS `experiment-bridge` (plan → implementation → GPU deployment with cross-model review before spend) |
-| **Code Writing** | research-implement-feature (informal requests); experiment-bridge (plan-driven campaigns) | ARIS | `~/.claude/skills/aris-research-implement-feature/SKILL.md` | PRIMARY | "Implement X" requests: F0 walking skeleton first, assumption ledger, one runnable acceptance command per rung | Full research pipeline wanted (→ research-pipeline); EXPERIMENT_PLAN.md exists (→ experiment-bridge) | SP `test-driven-development` (data/eval pipeline code), CS `engineering/zero-hallucination-coder` (never code against [UNKNOWN]); domain execution: OR `03-fine-tuning/peft`, OR `06-post-training/trl-fine-tuning`, OR `06-post-training/grpo-rl-training`, OR `10-optimization/flash-attention`, OR `10-optimization/bitsandbytes`, AAS `hugging-face-model-trainer`, AAS `hugging-face-vision-trainer`, CS `engineering-team/skills/senior-computer-vision`, TK `agents/data-ai/computer-vision-engineer`; SP `dispatching-parallel-agents` (parallel fan-out) |
-| **Code Review** | requesting-code-review | SP | `~/.claude/skills/sp-requesting-code-review/SKILL.md` | PRIMARY | Pre-commit/PR review with a strong reviewer template and severity calibration | Trivial diffs | AAS `code-review-and-quality` (five axes, severity labels, ~100/300/1000-line sizing; "AI-generated code needs more scrutiny, not less"), CS `engineering-team/skills/code-reviewer` (deterministic, 14 languages, ≥90 Approve / <50 Block), CS `engineering-team/skills/adversarial-reviewer` ("Each persona MUST find at least one issue — no 'LGTM' escapes") |
-| **Code Optimization / Refactoring** | dse-loop (tuning); system-profile (profiling) | ARIS | `~/.claude/skills/aris-dse-loop/SKILL.md` | PRIMARY | Empirical design-space exploration with objective metrics, constraints, full logging, resumable state; bottleneck investigation before optimizing | Expensive runs beyond budget; unmeasurable objective; correctness bug is the question (→ debugging) | CS `engineering/performance-profiler`, CS `engineering/focused-fix` (surgical fixes); model-level: OR `10-optimization/flash-attention`, `gptq`, `awq`, `hqq`, `gguf`, OR `19-emerging-techniques/speculative-decoding`, `model-pruning` |
-| **Debugging** | systematic-debugging | SP | `~/.claude/skills/sp-systematic-debugging/SKILL.md` | PRIMARY | Any bug: 4-phase root-cause Iron Law, reproduce → hypothesize → verify → fix; 3 failed fixes → question architecture | Trivial typos | ARIS `web-debug-search` (error evidence taxonomy, untrusted content), ARIS `training-check` (NaN/Inf, divergence, idle GPUs — ML domain-first), CS `engineering/grill-me` + `grill-with-docs`, AAS `systematic-debugging` (FALLBACK copy) |
-| **Experiment / Statistical Analysis** | analyze-results → result-to-claim → experiment-audit (integrity chain) | ARIS | `~/.claude/skills/aris-analyze-results/SKILL.md` | PRIMARY | Results on disk need interpretation, claim support judgment, and independent integrity audit (checklists A–F) before any claim enters the paper | Results missing; experiments still running | CS `engineering/statistical-analyst` (formal tests), ARF `audit-analysis` (file+line+quote, CONFIRMED/SUSPECTED), AAS `scanpy` (biomedical), SP `verification-before-completion` (before reporting anything as done) |
-| **Paper Writing** | paper-writing (W3 pipeline); drafting discipline from SS paper-writer; ML-venue templates from OR ml-paper-writing | ARIS / SS / OR | `~/.claude/skills/aris-paper-writing/SKILL.md` | PRIMARY | Full pipeline narrative → submission-ready PDF (plan → figures → write → compile → improvement loop → audits); evidence-gated drafting (L0–L4 hierarchy, zero placeholders, claim strength ≤ evidence strength); NeurIPS/ICML/ICLR/ACL/AAAI/COLM templates | Only one step needed (invoke sub-skill); no results yet | Pipeline parts: ARIS `paper-plan`, `paper-figure`, `paper-write` (DBLP/CrossRef bib chain), `paper-compile`, `auto-paper-improvement-loop`; Drafting: SS `paper-writer`, `intro-drafter`, `tech-paper-template`; Polish: SS `paper-polish` (meaning-preserving), NS `nature-polishing` (25 rules, sentences ≤30 words, AI traffic-light), AAS `scientific-writing`, AAS `tech-writing-proofread` ("Fix language, not facts"), HZ `humanizer`; Theory: ARIS `formula-derivation`, `proof-writer`; Systems venues: OR `20-ml-paper-writing/systems-paper-writing`, ARIS `writing-systems-papers` (SPECIAL-CASE); Conversion: AAS `latex-paper-conversion` |
-| **Grant Writing** | grant-proposal | ARIS | `~/.claude/skills/aris-grant-proposal/SKILL.md` | PRIMARY | Funding application from validated ideas + literature (KAKENHI/NSF/NSFC/ERC/DFG/SNSF/ARC/NWO/GENERIC); grant argues future work — never written as a paper | No validated idea / literature base yet (→ idea-discovery + research-lit); goal is a paper | ARF `review-grant` (funder personas NSF/NIH/ERC/Horizon), CS `research/grants` (NIH RePORTER + NOSI + Consensus MCP, 9-section docx, "contact program officer — never skip") |
-| **Figure Creation** | nature-figure (Nature-standard); paper-figure (ML data plots) | NS / ARIS | `~/.claude/skills/ns-nature-figure/SKILL.md` | PRIMARY | Publication figures: mandatory figure contract (conclusion, evidence chain, archetype, export contract), blocking Python/R backend question, QA contract (statistics legend, ML additions, image-integrity minima), vector SVG, no rainbow colormaps | Throwaway plots | OR `20-ml-paper-writing/academic-plotting` ("numerical axes → matplotlib; boxes/arrows → Gemini"), ARIS `figure-spec` (deterministic SVG architecture diagrams, Codex review ≥7/10), SS `figure-designer` (advisor for the 3 load-bearing figures), ARIS `paper-illustration` (raster illustration), ARIS `mermaid-diagram` (quick flowcharts), SS `drawio-reconstruction` (editable draw.io from a reference image), ARIS `paper-poster-html` (posters), ARIS `paper-slides` + `slides-polish` (talks), NS `nature-paper2ppt` |
-| **Prompt Optimization** | senior-prompt-engineer; dspy (systematic) | CS / OR | `~/.claude/skills/cs-senior-prompt-engineer/SKILL.md` | PRIMARY | Optimizing prompts: baseline before any change, eval set (10–20 cases) first, no-regression rule, "relevance < 0.80 is a retrieval problem"; data-driven program optimization when a metric + training data exist | No eval set / metric available | AAS `prompt-engineering`, SP `writing-skills` (micro-tested wording, anti-rationalization — for authoring meta-skills), OR `16-prompt-engineering/instructor` / `outlines` / `guidance` (structured outputs), ARIS `meta-optimize` (SPECIAL-CASE: periodic log-driven harness maintenance) |
-| **Context Engineering** | context-fundamentals + context-degradation + context-compression + context-optimization | CTX | `~/.claude/skills/ctx-context-fundamentals/SKILL.md` | PRIMARY | Long conversations: 70–80% compaction trigger, four-bucket classification, five degradation patterns, compression ratios (~98.6%), KV-cache → masking → compaction → partitioning order, budgets 35/30/20/15 | Short/simple tasks (skip the machinery) | CTX `filesystem-context` (2000-token offload threshold), CTX `self-managed-context` (pinned prefix, edit receipts), CTX `memory-systems` ("Invalidate but do not discard"), AAS `context-engineering` (5-level hierarchy), AAS `recursive-context-pruning-token-budgeting` (never prune safety headers), ARIS `research-wiki` (persistent domain memory) |
-| **Token Optimization** | efficient-web-research + CTX compression budgets | AAS / CTX | `~/.claude/skills/aas-efficient-web-research/SKILL.md` | PRIMARY | Web research: "Fetch the minimum needed to answer. Skim before you dive. Stop when you can answer."; max 3 files/URLs per query; >2000-token fetch → find a cheaper path | — | ARIS `alphaxiv` / `deepxiv` (tiered progressive reading), CTX `context-compression` / `context-optimization`, global token policy in `CLAUDE.md` |
-| **Important Message Filtering** | Global policy (CLAUDE.md §Filtering) + CTX context-degradation (Four-Bucket) + latent-briefing | CTX | `~/.claude/skills/ctx-context-degradation/SKILL.md` | PRIMARY | Conversation is long; must preserve: current request, constraints, decisions, task list, experiment config, paths, verified findings, unresolved errors, failed approaches, evidence; compress repeats/superseded plans/raw output | Never prune anything whose loss could change scientific interpretation, code behavior, reproducibility, or user intent | CTX `latent-briefing`, CS `productivity/handoff` (session continuity, 17-pattern redaction linter) |
-| **Tool Selection / Optimization** | tool-design (CTX); meta-optimize (periodic) | CTX / ARIS | `~/.claude/skills/ctx-tool-design/SKILL.md` | PRIMARY | Designing/consolidating tools: ServerName:tool_name naming, split tools with >8–10 params, consolidation rules; periodic harness optimization from usage logs (≥5 logged runs) | Ad-hoc tool use mid-task (use orchestrator Tool Controller instead) | CS `research/research` (deterministic SIGNALS classifier — routing reference pattern), TK `mcp-configs/research.json` (BGPT scientific-paper search, Brave Search, knowledge-graph memory), TK `contexts/research.md` ("Do not recommend a tool based on popularity alone", 30-minute time-box) |
-| **Verification / Completion** | verification-before-completion (generic) + ARIS integrity stack (paper-specific) | SP / ARIS | `~/.claude/skills/sp-verification-before-completion/SKILL.md` | PRIMARY | Any "done" claim needs fresh verification evidence (fresh command output, VCS diff); paper numbers: zero-context claim audit; bibliography: 3-layer citation audit; experiments: integrity audit A–F | Trivial tasks (single-file rename, factual one-liner) | ARIS `paper-claim-audit`, `citation-audit`, `experiment-audit`, `result-to-claim`, `kill-argument`, `integrity-forensics` (submission self-forensics), `auto-review-loop` (W2 cross-model review→fix→re-review); AAS `dos-verify-done-claims` (git-ancestry evidence), AAS `falsify` (no verdict without a falsifiable hypothesis), AAS `axiom` (assumption auditor), AAS `verify-citations` (Stipple — privacy gate: get approval before transmitting documents), SS `pre-submission-reviewer` (5-dimension, CRITICAL blocks submission), ARF `review-paper` suite (8-agent fan-out, `reviews/` isolation), CS `engineering/agent-harness` ("Never adjudicate your own verification", exit codes 0/2/3/4/5/6), CS `engineering/human-gate` (PRIMARY for clinical work: "Never invent a reviewer name"), CS `loop-library` ("Never report an error or exhausted budget as success") |
+| **Idea Discovery** | idea-creator (standalone); idea-discovery (full W1 pipeline) | ARIS | `~/.claude/skills/idea-creator/SKILL.md` | PRIMARY | A direction exists and concrete, pilot-testable ideas are needed; user asks to brainstorm / discover ideas | Idea already chosen (→ refine); no compute for pilots; cross-model reviewer backend (Codex MCP) unavailable → verdict gates become BLOCKED | OR `21-research-ideation/brainstorming-research-ideas`, OR `21-research-ideation/creative-thinking-for-research`, SP `brainstorming`, CS `research/pulse`, ARIS `research-lit` (input) |
+| **Idea Proposal / Refinement** | research-refine (+ research-refine-pipeline for one-shot with experiment plan) | ARIS | `~/.claude/skills/research-refine/SKILL.md` | PRIMARY | Vague problem + approach must become an anchored, frontier-aware method proposal (frozen Problem Anchor, complexity budget, ≤5 review rounds) | Method already concrete (→ experiment-plan); reviewer backend unavailable | SS `idea-evaluator` (fatal-flaw audit F1–F10 + verdict), SP `brainstorming` (clarification gates) |
+| **Novelty Check** | novelty-check | ARIS | `~/.claude/skills/novelty-check/SKILL.md` | PRIMARY | Idea must be checked against recent literature before implementation; 3–5 core claims, ≥3 query formulations per claim, ABANDON must name the paper | No concrete method description yet; routine literature search without a novelty question | SS `idea-evaluator` ("'not found' does not prove novelty"), CS `research/dossier` (≥30% disconfirming-query budget), ARIS `patent-novelty-check` (SPECIAL-CASE, legal standard, patent track only) |
+| **Literature Review** | research-lit (retrieval/synthesis) + SS deep-research (rigorous deep surveys) | ARIS / SS | `~/.claude/skills/research-lit/SKILL.md` | PRIMARY | Multi-source literature review with KB-first search, anti-hallucination verification of every hit; deep research with frozen RQs and adversarial perspectives | Reading one known paper (→ alphaxiv/deepxiv); auditing an existing bibliography (→ citation-audit) | Retrieval: ARIS `arxiv`, `semantic-scholar`, `deepxiv`, `alphaxiv`, `openalex`, `exa-search`, `gemini-search`; Biomedical: CS `research/litreview` (PubMed E-utilities + OpenAlex, PICO/SPIDER), AAS `papers-skill` (Semantic Scholar + arXiv CLI), AAS `ii-commons` (arXiv/PubMed-PMC/US-policy, deterministic), AAS `hugging-face-papers`; Reading protocols: CS `research/deepread`, AAS `dsh-deepread`, ARF `pdf-to-markdown`; TK `agents/research-analysis/deep-dive` |
+| **Experiment Planning / Design** | experiment-plan + ablation-planner | ARIS | `~/.claude/skills/experiment-plan/SKILL.md` | PRIMARY | Turn a refined proposal into a claim-driven, paper-oriented roadmap (Claim Map, MAX_PRIMARY_CLAIMS=2, MAX_CORE_BLOCKS=5, anti-claim, M0–M4 run order, DEFAULT_SEEDS=3); ablation design from reviewer perspective | Method not yet stable (→ refine); single known experiment | CS `research-ops/skills/clinical-research` (ICH E9(R1) estimand-first design, sample-size estimator — medical/clinical studies), CS `engineering-team/skills/senior-data-scientist` (A/B design, SRM check), SS `benchmark-paper-template` (benchmark papers), TK `agents/research-analysis/academic-researcher` (PICO, CONSORT/PRISMA/STROBE) |
+| **Statistical Planning** | statistical-analyst | CS | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/statistical-analyst/skills/statistical-analyst/SKILL.md` | PRIMARY | Hypothesis testing design: Welch over Student's, Wilson CI, multiplicity/peeking/Simpson's/SUTVA flags, refuses n<30 without normality, Ship/Hold/Extend/Kill verdicts | None within its scope | ARF `review-pap` (power/multiple-testing review of existing analyses), ARF `audit-analysis` (CONFIRMED/SUSPECTED evidence tags), ARIS `analyze-results` (seed mean±std, delta-vs-baseline), AAS `scanpy` (biomedical single-cell statistics) |
+| **Code Planning** | writing-plans (+ subagent-driven-development when parallelizing) | SP | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/writing-plans/SKILL.md` | PRIMARY | Multi-step implementation needs a reviewed plan with per-step verification checks | Trivial single-file changes | CS `engineering/zero-hallucination-coder` (Discuss→Map→Decompose; split if >300 lines / >3 files / >2 acceptance criteria), ARIS `experiment-bridge` (plan → implementation → GPU deployment with cross-model review before spend) |
+| **Code Writing** | research-implement-feature (informal requests); experiment-bridge (plan-driven campaigns) | ARIS | `~/.claude/skills/research-implement-feature/SKILL.md` | PRIMARY | "Implement X" requests: F0 walking skeleton first, assumption ledger, one runnable acceptance command per rung | Full research pipeline wanted (→ research-pipeline); EXPERIMENT_PLAN.md exists (→ experiment-bridge) | SP `test-driven-development` (data/eval pipeline code), CS `engineering/zero-hallucination-coder` (never code against [UNKNOWN]); domain execution: OR `03-fine-tuning/peft`, OR `06-post-training/trl-fine-tuning`, OR `06-post-training/grpo-rl-training`, OR `10-optimization/flash-attention`, OR `10-optimization/bitsandbytes`, AAS `hugging-face-model-trainer`, AAS `hugging-face-vision-trainer`, CS `engineering-team/skills/senior-computer-vision`, TK `agents/data-ai/computer-vision-engineer`; SP `dispatching-parallel-agents` (parallel fan-out) |
+| **Code Review** | requesting-code-review | SP | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/requesting-code-review/SKILL.md` | PRIMARY | Pre-commit/PR review with a strong reviewer template and severity calibration | Trivial diffs | AAS `code-review-and-quality` (five axes, severity labels, ~100/300/1000-line sizing; "AI-generated code needs more scrutiny, not less"), CS `engineering-team/skills/code-reviewer` (deterministic, 14 languages, ≥90 Approve / <50 Block), CS `engineering-team/skills/adversarial-reviewer` ("Each persona MUST find at least one issue — no 'LGTM' escapes") |
+| **Code Optimization / Refactoring** | dse-loop (tuning); system-profile (profiling) | ARIS | `~/.claude/skills/dse-loop/SKILL.md` | PRIMARY | Empirical design-space exploration with objective metrics, constraints, full logging, resumable state; bottleneck investigation before optimizing | Expensive runs beyond budget; unmeasurable objective; correctness bug is the question (→ debugging) | CS `engineering/performance-profiler`, CS `engineering/focused-fix` (surgical fixes); model-level: OR `10-optimization/flash-attention`, `gptq`, `awq`, `hqq`, `gguf`, OR `19-emerging-techniques/speculative-decoding`, `model-pruning` |
+| **Debugging** | systematic-debugging | SP | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/systematic-debugging/SKILL.md` | PRIMARY | Any bug: 4-phase root-cause Iron Law, reproduce → hypothesize → verify → fix; 3 failed fixes → question architecture | Trivial typos | ARIS `web-debug-search` (error evidence taxonomy, untrusted content), ARIS `training-check` (NaN/Inf, divergence, idle GPUs — ML domain-first), CS `engineering/grill-me` + `grill-with-docs`, AAS `systematic-debugging` (FALLBACK copy) |
+| **Experiment / Statistical Analysis** | analyze-results → result-to-claim → experiment-audit (integrity chain) | ARIS | `~/.claude/skills/analyze-results/SKILL.md` | PRIMARY | Results on disk need interpretation, claim support judgment, and independent integrity audit (checklists A–F) before any claim enters the paper | Results missing; experiments still running | CS `engineering/statistical-analyst` (formal tests), ARF `audit-analysis` (file+line+quote, CONFIRMED/SUSPECTED), AAS `scanpy` (biomedical), SP `verification-before-completion` (before reporting anything as done) |
+| **Paper Writing** | paper-writing (W3 pipeline); drafting discipline from SS paper-writer; ML-venue templates from OR ml-paper-writing | ARIS / SS / OR | `~/.claude/skills/paper-writing/SKILL.md` | PRIMARY | Full pipeline narrative → submission-ready PDF (plan → figures → write → compile → improvement loop → audits); evidence-gated drafting (L0–L4 hierarchy, zero placeholders, claim strength ≤ evidence strength); NeurIPS/ICML/ICLR/ACL/AAAI/COLM templates | Only one step needed (invoke sub-skill); no results yet | Pipeline parts: ARIS `paper-plan`, `paper-figure`, `paper-write` (DBLP/CrossRef bib chain), `paper-compile`, `auto-paper-improvement-loop`; Drafting: SS `paper-writer`, `intro-drafter`, `tech-paper-template`; Polish: SS `paper-polish` (meaning-preserving), NS `nature-polishing` (25 rules, sentences ≤30 words, AI traffic-light), AAS `scientific-writing`, AAS `tech-writing-proofread` ("Fix language, not facts"), HZ `humanizer`; Theory: ARIS `formula-derivation`, `proof-writer`; Systems venues: OR `20-ml-paper-writing/systems-paper-writing`, ARIS `writing-systems-papers` (SPECIAL-CASE); Conversion: AAS `latex-paper-conversion` |
+| **Grant Writing** | grant-proposal | ARIS | `~/.claude/skills/grant-proposal/SKILL.md` | PRIMARY | Funding application from validated ideas + literature (KAKENHI/NSF/NSFC/ERC/DFG/SNSF/ARC/NWO/GENERIC); grant argues future work — never written as a paper | No validated idea / literature base yet (→ idea-discovery + research-lit); goal is a paper | ARF `review-grant` (funder personas NSF/NIH/ERC/Horizon), CS `research/grants` (NIH RePORTER + NOSI + Consensus MCP, 9-section docx, "contact program officer — never skip") |
+| **Figure Creation** | nature-figure (Nature-standard); paper-figure (ML data plots) | NS / ARIS | `~/.claude/skills/nature-figure/SKILL.md` | PRIMARY | Publication figures: mandatory figure contract (conclusion, evidence chain, archetype, export contract), blocking Python/R backend question, QA contract (statistics legend, ML additions, image-integrity minima), vector SVG, no rainbow colormaps | Throwaway plots | OR `20-ml-paper-writing/academic-plotting` ("numerical axes → matplotlib; boxes/arrows → Gemini"), ARIS `figure-spec` (deterministic SVG architecture diagrams, Codex review ≥7/10), SS `figure-designer` (advisor for the 3 load-bearing figures), ARIS `paper-illustration` (raster illustration), ARIS `mermaid-diagram` (quick flowcharts), SS `drawio-reconstruction` (editable draw.io from a reference image), ARIS `paper-poster-html` (posters), ARIS `paper-slides` + `slides-polish` (talks), NS `nature-paper2ppt` |
+| **Prompt Optimization** | senior-prompt-engineer; dspy (systematic) | CS / OR | `~/.claude/plugins/marketplaces/claude-code-skills/engineering-team/skills/senior-prompt-engineer/SKILL.md` | PRIMARY | Optimizing prompts: baseline before any change, eval set (10–20 cases) first, no-regression rule, "relevance < 0.80 is a retrieval problem"; data-driven program optimization when a metric + training data exist | No eval set / metric available | AAS `prompt-engineering`, SP `writing-skills` (micro-tested wording, anti-rationalization — for authoring meta-skills), OR `16-prompt-engineering/instructor` / `outlines` / `guidance` (structured outputs), ARIS `meta-optimize` (SPECIAL-CASE: periodic log-driven harness maintenance) |
+| **Context Engineering** | context-fundamentals + context-degradation + context-compression + context-optimization | CTX | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/context-fundamentals/SKILL.md` | PRIMARY | Long conversations: 70–80% compaction trigger, four-bucket classification, five degradation patterns, compression ratios (~98.6%), KV-cache → masking → compaction → partitioning order, budgets 35/30/20/15 | Short/simple tasks (skip the machinery) | CTX `filesystem-context` (2000-token offload threshold), CTX `self-managed-context` (pinned prefix, edit receipts), CTX `memory-systems` ("Invalidate but do not discard"), AAS `context-engineering` (5-level hierarchy), AAS `recursive-context-pruning-token-budgeting` (never prune safety headers), ARIS `research-wiki` (persistent domain memory) |
+| **Token Optimization** | efficient-web-research + CTX compression budgets | AAS / CTX | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/efficient-web-research/SKILL.md` | PRIMARY | Web research: "Fetch the minimum needed to answer. Skim before you dive. Stop when you can answer."; max 3 files/URLs per query; >2000-token fetch → find a cheaper path | — | ARIS `alphaxiv` / `deepxiv` (tiered progressive reading), CTX `context-compression` / `context-optimization`, global token policy in `CLAUDE.md` |
+| **Important Message Filtering** | Global policy (CLAUDE.md §Filtering) + CTX context-degradation (Four-Bucket) + latent-briefing | CTX | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/context-degradation/SKILL.md` | PRIMARY | Conversation is long; must preserve: current request, constraints, decisions, task list, experiment config, paths, verified findings, unresolved errors, failed approaches, evidence; compress repeats/superseded plans/raw output | Never prune anything whose loss could change scientific interpretation, code behavior, reproducibility, or user intent | CTX `latent-briefing`, CS `productivity/handoff` (session continuity, 17-pattern redaction linter) |
+| **Tool Selection / Optimization** | tool-design (CTX); meta-optimize (periodic) | CTX / ARIS | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/tool-design/SKILL.md` | PRIMARY | Designing/consolidating tools: ServerName:tool_name naming, split tools with >8–10 params, consolidation rules; periodic harness optimization from usage logs (≥5 logged runs) | Ad-hoc tool use mid-task (use orchestrator Tool Controller instead) | CS `research/research` (deterministic SIGNALS classifier — routing reference pattern), TK `mcp-configs/research.json` (BGPT scientific-paper search, Brave Search, knowledge-graph memory), TK `contexts/research.md` ("Do not recommend a tool based on popularity alone", 30-minute time-box) |
+| **Verification / Completion** | verification-before-completion (generic) + ARIS integrity stack (paper-specific) | SP / ARIS | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/verification-before-completion/SKILL.md` | PRIMARY | Any "done" claim needs fresh verification evidence (fresh command output, VCS diff); paper numbers: zero-context claim audit; bibliography: 3-layer citation audit; experiments: integrity audit A–F | Trivial tasks (single-file rename, factual one-liner) | ARIS `paper-claim-audit`, `citation-audit`, `experiment-audit`, `result-to-claim`, `kill-argument`, `integrity-forensics` (submission self-forensics), `auto-review-loop` (W2 cross-model review→fix→re-review); AAS `dos-verify-done-claims` (git-ancestry evidence), AAS `falsify` (no verdict without a falsifiable hypothesis), AAS `axiom` (assumption auditor), AAS `verify-citations` (Stipple — privacy gate: get approval before transmitting documents), SS `pre-submission-reviewer` (5-dimension, CRITICAL blocks submission), ARF `review-paper` suite (8-agent fan-out, `reviews/` isolation), CS `engineering/agent-harness` ("Never adjudicate your own verification", exit codes 0/2/3/4/5/6), CS `engineering/human-gate` (PRIMARY for clinical work: "Never invent a reviewer name"), CS `loop-library` ("Never report an error or exhausted budget as success") |
 
 ---
 
@@ -195,74 +210,74 @@ Legend for field "Recommended priority": P = PRIMARY, S = SECONDARY, C = COMPLEM
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| idea-discovery | `~/.claude/skills/aris-idea-discovery/SKILL.md` | Idea Discovery (workflow) | P |
-| idea-creator | `~/.claude/skills/aris-idea-creator/SKILL.md` | Idea Discovery | P |
-| novelty-check | `~/.claude/skills/aris-novelty-check/SKILL.md` | Novelty | P |
-| research-lit | `~/.claude/skills/aris-research-lit/SKILL.md` | Literature Review | P |
-| research-refine | `~/.claude/skills/aris-research-refine/SKILL.md` | Idea Refinement | P |
-| research-refine-pipeline | `~/.claude/skills/aris-research-refine-pipeline/SKILL.md` | Idea Refinement | P |
-| experiment-plan | `~/.claude/skills/aris-experiment-plan/SKILL.md` | Experiment Design | P |
-| ablation-planner | `~/.claude/skills/aris-ablation-planner/SKILL.md` | Experiment Design | P |
-| experiment-bridge | `~/.claude/skills/aris-experiment-bridge/SKILL.md` | Experiment Design→Coding | P |
-| run-experiment | `~/.claude/skills/aris-run-experiment/SKILL.md` | Tool Usage (execution) | P |
-| analyze-results | `~/.claude/skills/aris-analyze-results/SKILL.md` | Statistics | C |
-| result-to-claim | `~/.claude/skills/aris-result-to-claim/SKILL.md` | Verification | P |
-| experiment-audit | `~/.claude/skills/aris-experiment-audit/SKILL.md` | Verification | P |
-| auto-review-loop | `~/.claude/skills/aris-auto-review-loop/SKILL.md` | Verification (W2 loop) | P |
-| research-review | `~/.claude/skills/aris-research-review/SKILL.md` | Verification | P |
-| research-pipeline | `~/.claude/skills/aris-research-pipeline/SKILL.md` | Research (end-to-end) | P |
-| research-implement-feature | `~/.claude/skills/aris-research-implement-feature/SKILL.md` | Coding | P |
-| paper-plan | `~/.claude/skills/aris-paper-plan/SKILL.md` | Academic Writing (planning) | P |
-| paper-figure | `~/.claude/skills/aris-paper-figure/SKILL.md` | Figure Creation | P |
-| paper-write | `~/.claude/skills/aris-paper-write/SKILL.md` | Academic Writing (LaTeX) | P |
-| paper-compile | `~/.claude/skills/aris-paper-compile/SKILL.md` | Academic Writing (build) | P |
-| paper-writing | `~/.claude/skills/aris-paper-writing/SKILL.md` | Academic Writing (W3 pipeline) | P |
-| auto-paper-improvement-loop | `~/.claude/skills/aris-auto-paper-improvement-loop/SKILL.md` | Academic Writing | P |
-| paper-claim-audit | `~/.claude/skills/aris-paper-claim-audit/SKILL.md` | Verification | P |
-| citation-audit | `~/.claude/skills/aris-citation-audit/SKILL.md` | Verification | P |
-| kill-argument | `~/.claude/skills/aris-kill-argument/SKILL.md` | Verification | S |
-| integrity-forensics | `~/.claude/skills/aris-integrity-forensics/SKILL.md` | Verification | S/X |
-| rebuttal | `~/.claude/skills/aris-rebuttal/SKILL.md` | Academic Writing (rebuttal) | P |
-| resubmit-pipeline | `~/.claude/skills/aris-resubmit-pipeline/SKILL.md` | Academic Writing | S/X |
-| grant-proposal | `~/.claude/skills/aris-grant-proposal/SKILL.md` | Grant Writing | P |
-| research-wiki | `~/.claude/skills/aris-research-wiki/SKILL.md` | Context Engineering (memory) | P |
-| wiki-enrich | `~/.claude/skills/aris-wiki-enrich/SKILL.md` | Context Engineering | S |
-| dse-loop | `~/.claude/skills/aris-dse-loop/SKILL.md` | Code Optimization | P |
-| system-profile | `~/.claude/skills/aris-system-profile/SKILL.md` | Code Optimization | S |
-| training-check | `~/.claude/skills/aris-training-check/SKILL.md` | Machine Learning (health) | S |
-| web-debug-search | `~/.claude/skills/aris-web-debug-search/SKILL.md` | Debugging | C |
-| figure-spec | `~/.claude/skills/aris-figure-spec/SKILL.md` | Figure Creation | S |
-| paper-illustration | `~/.claude/skills/aris-paper-illustration/SKILL.md` | Figure Creation | C/F |
-| mermaid-diagram | `~/.claude/skills/aris-mermaid-diagram/SKILL.md` | Figure Creation | S |
-| paper-poster-html | `~/.claude/skills/aris-paper-poster-html/SKILL.md` | Figure Creation (poster) | P |
-| paper-slides | `~/.claude/skills/aris-paper-slides/SKILL.md` | Academic Writing (talks) | P |
-| slides-polish | `~/.claude/skills/aris-slides-polish/SKILL.md` | Figure Creation | S |
-| paper-talk | `~/.claude/skills/aris-paper-talk/SKILL.md` | Academic Writing (talk pipeline) | P |
-| proof-writer | `~/.claude/skills/aris-proof-writer/SKILL.md` | Academic Writing (theory) | S |
-| proof-checker | `~/.claude/skills/aris-proof-checker/SKILL.md` | Verification (math) | P (theory) / X |
-| proof-orchestrator | `~/.claude/skills/aris-proof-orchestrator/SKILL.md` | Verification | C/X |
-| formula-derivation | `~/.claude/skills/aris-formula-derivation/SKILL.md` | Academic Writing (theory) | S |
-| arxiv | `~/.claude/skills/aris-arxiv/SKILL.md` | Literature Review (tool) | S |
-| semantic-scholar | `~/.claude/skills/aris-semantic-scholar/SKILL.md` | Literature Review (tool) | S |
-| deepxiv | `~/.claude/skills/aris-deepxiv/SKILL.md` | Literature Review (tool) | S |
-| alphaxiv | `~/.claude/skills/aris-alphaxiv/SKILL.md` | Literature Review (tool) | S |
-| openalex | `~/.claude/skills/aris-openalex/SKILL.md` | Literature Review (tool) | C |
-| exa-search | `~/.claude/skills/aris-exa-search/SKILL.md` | Literature Review (tool) | C |
-| gemini-search | `~/.claude/skills/aris-gemini-search/SKILL.md` | Literature Review (tool) | C |
-| experiment-queue | `~/.claude/skills/aris-experiment-queue/SKILL.md` | Machine Learning (queue) | S |
-| monitor-experiment | `~/.claude/skills/aris-monitor-experiment/SKILL.md` | Tool Usage | S |
-| meta-optimize | `~/.claude/skills/aris-meta-optimize/SKILL.md` | Prompt Engineering (harness) | X |
-| writing-systems-papers | `~/.claude/skills/aris-writing-systems-papers/SKILL.md` | Academic Writing | X |
-| render-html | `~/.claude/skills/aris-render-html/SKILL.md` | Tool Usage | C |
-| overleaf-sync | `~/.claude/skills/aris-overleaf-sync/SKILL.md` | Tool Usage | S/X |
-| vast-gpu / serverless-modal / qzcli | `~/.claude/skills/aris-vast-gpu/SKILL.md · ~/.claude/skills/aris-serverless-modal/SKILL.md · ~/.claude/skills/aris-qzcli/SKILL.md` | Tool Usage (GPU backends) | S / C / X |
-| auto-review-loop-llm / auto-review-loop-minimax | `~/.claude/skills/aris-auto-review-loop-llm/SKILL.md · ~/.claude/skills/aris-auto-review-loop-minimax/SKILL.md` | Verification (fallback) | F |
-| idea-discovery-robot | `~/.claude/skills/aris-idea-discovery-robot/SKILL.md` | Idea Discovery | X |
-| comm-lit-review | `~/.claude/skills/aris-comm-lit-review/SKILL.md` | Literature Review | X |
-| patent-pipeline, prior-art-search, patent-novelty-check, invention-structuring, claims-drafting, specification-writing, jurisdiction-format, patent-review, embodiment-description, figure-description | `~/.claude/skills/aris-patent-pipeline/SKILL.md · ~/.claude/skills/aris-prior-art-search/SKILL.md · ~/.claude/skills/aris-patent-novelty-check/SKILL.md · ~/.claude/skills/aris-invention-structuring/SKILL.md · ~/.claude/skills/aris-claims-drafting/SKILL.md · ~/.claude/skills/aris-specification-writing/SKILL.md · ~/.claude/skills/aris-jurisdiction-format/SKILL.md · ~/.claude/skills/aris-patent-review/SKILL.md · ~/.claude/skills/aris-embodiment-description/SKILL.md · ~/.claude/skills/aris-figure-description/SKILL.md` | Patent track | X |
-| feishu-notify | `~/.claude/skills/aris-feishu-notify/SKILL.md` | Tool Usage | X |
-| interview-cheatsheet | `~/.claude/skills/aris-interview-cheatsheet/SKILL.md` | Academic Writing (teaching) | X |
-| pixel-art | `~/.claude/skills/aris-pixel-art/SKILL.md` | Figure Creation (decorative) | C |
+| idea-discovery | `~/.claude/skills/idea-discovery/SKILL.md` | Idea Discovery (workflow) | P |
+| idea-creator | `~/.claude/skills/idea-creator/SKILL.md` | Idea Discovery | P |
+| novelty-check | `~/.claude/skills/novelty-check/SKILL.md` | Novelty | P |
+| research-lit | `~/.claude/skills/research-lit/SKILL.md` | Literature Review | P |
+| research-refine | `~/.claude/skills/research-refine/SKILL.md` | Idea Refinement | P |
+| research-refine-pipeline | `~/.claude/skills/research-refine-pipeline/SKILL.md` | Idea Refinement | P |
+| experiment-plan | `~/.claude/skills/experiment-plan/SKILL.md` | Experiment Design | P |
+| ablation-planner | `~/.claude/skills/ablation-planner/SKILL.md` | Experiment Design | P |
+| experiment-bridge | `~/.claude/skills/experiment-bridge/SKILL.md` | Experiment Design→Coding | P |
+| run-experiment | `~/.claude/skills/run-experiment/SKILL.md` | Tool Usage (execution) | P |
+| analyze-results | `~/.claude/skills/analyze-results/SKILL.md` | Statistics | C |
+| result-to-claim | `~/.claude/skills/result-to-claim/SKILL.md` | Verification | P |
+| experiment-audit | `~/.claude/skills/experiment-audit/SKILL.md` | Verification | P |
+| auto-review-loop | `~/.claude/skills/auto-review-loop/SKILL.md` | Verification (W2 loop) | P |
+| research-review | `~/.claude/skills/research-review/SKILL.md` | Verification | P |
+| research-pipeline | `~/.claude/skills/research-pipeline/SKILL.md` | Research (end-to-end) | P |
+| research-implement-feature | `~/.claude/skills/research-implement-feature/SKILL.md` | Coding | P |
+| paper-plan | `~/.claude/skills/paper-plan/SKILL.md` | Academic Writing (planning) | P |
+| paper-figure | `~/.claude/skills/paper-figure/SKILL.md` | Figure Creation | P |
+| paper-write | `~/.claude/skills/paper-write/SKILL.md` | Academic Writing (LaTeX) | P |
+| paper-compile | `~/.claude/skills/paper-compile/SKILL.md` | Academic Writing (build) | P |
+| paper-writing | `~/.claude/skills/paper-writing/SKILL.md` | Academic Writing (W3 pipeline) | P |
+| auto-paper-improvement-loop | `~/.claude/skills/auto-paper-improvement-loop/SKILL.md` | Academic Writing | P |
+| paper-claim-audit | `~/.claude/skills/paper-claim-audit/SKILL.md` | Verification | P |
+| citation-audit | `~/.claude/skills/citation-audit/SKILL.md` | Verification | P |
+| kill-argument | `~/.claude/skills/kill-argument/SKILL.md` | Verification | S |
+| integrity-forensics | `~/.claude/skills/integrity-forensics/SKILL.md` | Verification | S/X |
+| rebuttal | `~/.claude/skills/rebuttal/SKILL.md` | Academic Writing (rebuttal) | P |
+| resubmit-pipeline | `~/.claude/skills/resubmit-pipeline/SKILL.md` | Academic Writing | S/X |
+| grant-proposal | `~/.claude/skills/grant-proposal/SKILL.md` | Grant Writing | P |
+| research-wiki | `~/.claude/skills/research-wiki/SKILL.md` | Context Engineering (memory) | P |
+| wiki-enrich | `~/.claude/skills/wiki-enrich/SKILL.md` | Context Engineering | S |
+| dse-loop | `~/.claude/skills/dse-loop/SKILL.md` | Code Optimization | P |
+| system-profile | `~/.claude/skills/system-profile/SKILL.md` | Code Optimization | S |
+| training-check | `~/.claude/skills/training-check/SKILL.md` | Machine Learning (health) | S |
+| web-debug-search | `~/.claude/skills/web-debug-search/SKILL.md` | Debugging | C |
+| figure-spec | `~/.claude/skills/figure-spec/SKILL.md` | Figure Creation | S |
+| paper-illustration | `~/.claude/skills/paper-illustration/SKILL.md` | Figure Creation | C/F |
+| mermaid-diagram | `~/.claude/skills/mermaid-diagram/SKILL.md` | Figure Creation | S |
+| paper-poster-html | `~/.claude/skills/paper-poster-html/SKILL.md` | Figure Creation (poster) | P |
+| paper-slides | `~/.claude/skills/paper-slides/SKILL.md` | Academic Writing (talks) | P |
+| slides-polish | `~/.claude/skills/slides-polish/SKILL.md` | Figure Creation | S |
+| paper-talk | `~/.claude/skills/paper-talk/SKILL.md` | Academic Writing (talk pipeline) | P |
+| proof-writer | `~/.claude/skills/proof-writer/SKILL.md` | Academic Writing (theory) | S |
+| proof-checker | `~/.claude/skills/proof-checker/SKILL.md` | Verification (math) | P (theory) / X |
+| proof-orchestrator | `~/.claude/skills/proof-orchestrator/SKILL.md` | Verification | C/X |
+| formula-derivation | `~/.claude/skills/formula-derivation/SKILL.md` | Academic Writing (theory) | S |
+| arxiv | `~/.claude/skills/arxiv/SKILL.md` | Literature Review (tool) | S |
+| semantic-scholar | `~/.claude/skills/semantic-scholar/SKILL.md` | Literature Review (tool) | S |
+| deepxiv | `~/.claude/skills/deepxiv/SKILL.md` | Literature Review (tool) | S |
+| alphaxiv | `~/.claude/skills/alphaxiv/SKILL.md` | Literature Review (tool) | S |
+| openalex | `~/.claude/skills/openalex/SKILL.md` | Literature Review (tool) | C |
+| exa-search | `~/.claude/skills/exa-search/SKILL.md` | Literature Review (tool) | C |
+| gemini-search | `~/.claude/skills/gemini-search/SKILL.md` | Literature Review (tool) | C |
+| experiment-queue | `~/.claude/skills/experiment-queue/SKILL.md` | Machine Learning (queue) | S |
+| monitor-experiment | `~/.claude/skills/monitor-experiment/SKILL.md` | Tool Usage | S |
+| meta-optimize | `~/.claude/skills/meta-optimize/SKILL.md` | Prompt Engineering (harness) | X |
+| writing-systems-papers | `~/.claude/skills/writing-systems-papers/SKILL.md` | Academic Writing | X |
+| render-html | `~/.claude/skills/render-html/SKILL.md` | Tool Usage | C |
+| overleaf-sync | `~/.claude/skills/overleaf-sync/SKILL.md` | Tool Usage | S/X |
+| vast-gpu / serverless-modal / qzcli | `~/.claude/skills/vast-gpu/SKILL.md · ~/.claude/skills/serverless-modal/SKILL.md · ~/.claude/skills/qzcli/SKILL.md` | Tool Usage (GPU backends) | S / C / X |
+| auto-review-loop-llm / auto-review-loop-minimax | `~/.claude/skills/auto-review-loop-llm/SKILL.md · ~/.claude/skills/auto-review-loop-minimax/SKILL.md` | Verification (fallback) | F |
+| idea-discovery-robot | `~/.claude/skills/idea-discovery-robot/SKILL.md` | Idea Discovery | X |
+| comm-lit-review | `~/.claude/skills/comm-lit-review/SKILL.md` | Literature Review | X |
+| patent-pipeline, prior-art-search, patent-novelty-check, invention-structuring, claims-drafting, specification-writing, jurisdiction-format, patent-review, embodiment-description, figure-description | `~/.claude/skills/patent-pipeline/SKILL.md · ~/.claude/skills/prior-art-search/SKILL.md · ~/.claude/skills/patent-novelty-check/SKILL.md · ~/.claude/skills/invention-structuring/SKILL.md · ~/.claude/skills/claims-drafting/SKILL.md · ~/.claude/skills/specification-writing/SKILL.md · ~/.claude/skills/jurisdiction-format/SKILL.md · ~/.claude/skills/patent-review/SKILL.md · ~/.claude/skills/embodiment-description/SKILL.md · ~/.claude/skills/figure-description/SKILL.md` | Patent track | X |
+| feishu-notify | `~/.claude/skills/feishu-notify/SKILL.md` | Tool Usage | X |
+| interview-cheatsheet | `~/.claude/skills/interview-cheatsheet/SKILL.md` | Academic Writing (teaching) | X |
+| pixel-art | `~/.claude/skills/pixel-art/SKILL.md` | Figure Creation (decorative) | C |
 
 Key verbatim rules that must survive routing (from SKILL.md content):
 - idea-creator: "Quantity first, quality second"; "The reviewer's ranking allocates the scarce pilot slots; it is not an elimination verdict"; "Never fabricate arXiv IDs, DOIs, or titles from memory."
@@ -278,85 +293,85 @@ Key verbatim rules that must survive routing (from SKILL.md content):
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| autoresearch | `~/.claude/skills/or-0-autoresearch-skill/SKILL.md` | Research (two-loop orchestration) | S |
-| litgpt | `~/.claude/skills/or-litgpt/SKILL.md` | Deep Learning | S |
-| torchtitan | `~/.claude/skills/or-torchtitan/SKILL.md` | Deep Learning | S/X |
-| mamba / rwkv / nanogpt | `~/.claude/skills/or-mamba/SKILL.md · ~/.claude/skills/or-rwkv/SKILL.md · ~/.claude/skills/or-nanogpt/SKILL.md` | Deep Learning | S |
-| huggingface-tokenizers | `~/.claude/skills/or-huggingface-tokenizers/SKILL.md` | Machine Learning | P |
-| sentencepiece | `~/.claude/skills/or-sentencepiece/SKILL.md` | Machine Learning | S |
-| peft | `~/.claude/skills/or-peft/SKILL.md` | Machine Learning (PEFT) | P |
-| axolotl | `~/.claude/skills/or-axolotl/SKILL.md` | Machine Learning | F |
-| llama-factory / unsloth | `~/.claude/skills/or-llama-factory/SKILL.md · ~/.claude/skills/or-unsloth/SKILL.md` | Machine Learning | F (thin scraper stubs) |
-| transformer-lens | `~/.claude/skills/or-transformer-lens/SKILL.md` | Machine Learning (interp) | C |
-| saelens / nnsight / pyvene | `~/.claude/skills/or-saelens/SKILL.md · ~/.claude/skills/or-nnsight/SKILL.md · ~/.claude/skills/or-pyvene/SKILL.md` | Machine Learning (interp) | C |
-| ray-data | `~/.claude/skills/or-ray-data/SKILL.md` | Machine Learning (data) | S |
-| nemo-curator | `~/.claude/skills/or-nemo-curator/SKILL.md` | Machine Learning (data) | C |
-| trl-fine-tuning | `~/.claude/skills/or-trl-fine-tuning/SKILL.md` | Machine Learning (post-training) | P |
-| grpo-rl-training | `~/.claude/skills/or-grpo-rl-training/SKILL.md` | Machine Learning (RL) | P |
-| simpo | `~/.claude/skills/or-simpo/SKILL.md` | Machine Learning | S |
-| openrlhf | `~/.claude/skills/or-openrlhf/SKILL.md` | Machine Learning | S |
-| verl | `~/.claude/skills/or-verl/SKILL.md` | Machine Learning | S |
-| slime / miles / torchforge | `~/.claude/skills/or-slime/SKILL.md · ~/.claude/skills/or-miles/SKILL.md · ~/.claude/skills/or-torchforge/SKILL.md` | Machine Learning | C / X / F |
-| constitutional-ai | `~/.claude/skills/or-constitutional-ai/SKILL.md` | Machine Learning | C |
-| llamaguard | `~/.claude/skills/or-llamaguard/SKILL.md` | Machine Learning | S |
-| nemo-guardrails / prompt-guard | `~/.claude/skills/or-nemo-guardrails/SKILL.md · ~/.claude/skills/or-prompt-guard/SKILL.md` | Tool Usage | C |
-| accelerate | `~/.claude/skills/or-accelerate/SKILL.md` | Machine Learning | S |
-| deepspeed | `~/.claude/skills/or-deepspeed/SKILL.md` | Machine Learning | F (scraper dump) |
-| megatron-core | `~/.claude/skills/or-megatron-core/SKILL.md` | Machine Learning | X |
-| pytorch-fsdp2 | `~/.claude/skills/or-pytorch-fsdp2/SKILL.md` | Machine Learning | S |
-| pytorch-lightning | `~/.claude/skills/or-pytorch-lightning/SKILL.md` | Machine Learning | S |
-| ray-train | `~/.claude/skills/or-ray-train/SKILL.md` | Machine Learning | S |
-| modal | `~/.claude/skills/or-modal/SKILL.md` | Tool Usage | S |
-| skypilot | `~/.claude/skills/or-skypilot/SKILL.md` | Tool Usage | S |
-| lambda-labs | `~/.claude/skills/or-lambda-labs/SKILL.md` | Tool Usage | F |
-| flash-attention | `~/.claude/skills/or-flash-attention/SKILL.md` | Machine Learning | P |
-| bitsandbytes | `~/.claude/skills/or-bitsandbytes/SKILL.md` | Machine Learning | P |
-| gptq / awq | `~/.claude/skills/or-gptq/SKILL.md · ~/.claude/skills/or-awq/SKILL.md` | Machine Learning | S |
-| hqq | `~/.claude/skills/or-hqq/SKILL.md` | Machine Learning | C |
-| gguf | `~/.claude/skills/or-gguf/SKILL.md` | Machine Learning | S |
-| ml-training-recipes | `~/.claude/skills/or-ml-training-recipes/SKILL.md` | Machine Learning | P (broadest training playbook, incl. biomedical/medical imaging references) |
-| lm-evaluation-harness | `~/.claude/skills/or-lm-evaluation-harness/SKILL.md` | Evaluation | P |
-| bigcode-evaluation-harness | `~/.claude/skills/or-bigcode-evaluation-harness/SKILL.md` | Evaluation | S |
-| nemo-evaluator | `~/.claude/skills/or-nemo-evaluator/SKILL.md` | Evaluation | X |
-| vllm | `~/.claude/skills/or-vllm/SKILL.md` | Machine Learning (serving) | P |
-| tensorrt-llm | `~/.claude/skills/or-tensorrt-llm/SKILL.md` | Machine Learning | S |
-| sglang | `~/.claude/skills/or-sglang/SKILL.md` | Machine Learning | S |
-| llama-cpp | `~/.claude/skills/or-llama-cpp/SKILL.md` | Machine Learning | F |
-| weights-and-biases | `~/.claude/skills/or-weights-and-biases/SKILL.md` | MLOps | P |
-| mlflow | `~/.claude/skills/or-mlflow/SKILL.md` | MLOps | S |
-| tensorboard / swanlab | `~/.claude/skills/or-tensorboard/SKILL.md · ~/.claude/skills/or-swanlab/SKILL.md` | MLOps | C |
-| langchain / llamaindex | `~/.claude/skills/or-langchain/SKILL.md · ~/.claude/skills/or-llamaindex/SKILL.md` | Tool Usage | S |
-| crewai | `~/.claude/skills/or-crewai/SKILL.md` | Tool Usage | C |
-| autogpt | `~/.claude/skills/or-autogpt/SKILL.md` | Tool Usage | F |
-| a-evolve | `~/.claude/skills/or-a-evolve/SKILL.md` | Prompt Engineering | C |
-| chroma | `~/.claude/skills/or-chroma/SKILL.md` | Tool Usage (vector DB) | P |
-| faiss | `~/.claude/skills/or-faiss/SKILL.md` | Tool Usage | C |
-| qdrant | `~/.claude/skills/or-qdrant/SKILL.md` | Tool Usage | S |
-| pinecone | `~/.claude/skills/or-pinecone/SKILL.md` | Tool Usage | F |
-| sentence-transformers | `~/.claude/skills/or-sentence-transformers/SKILL.md` | Machine Learning (embeddings) | P |
-| dspy | `~/.claude/skills/or-dspy/SKILL.md` | Prompt Engineering | P |
-| instructor | `~/.claude/skills/or-instructor/SKILL.md` | Prompt Engineering | S |
-| outlines / guidance | `~/.claude/skills/or-outlines/SKILL.md · ~/.claude/skills/or-guidance/SKILL.md` | Prompt Engineering | S / C |
-| langsmith | `~/.claude/skills/or-langsmith/SKILL.md` | Tool Usage | S |
-| phoenix | `~/.claude/skills/or-phoenix/SKILL.md` | Tool Usage | S |
-| segment-anything | `~/.claude/skills/or-segment-anything/SKILL.md` | Computer Vision | P (default segmentation incl. medical-image workflows) |
-| clip | `~/.claude/skills/or-clip/SKILL.md` | Computer Vision | C |
-| blip-2 | `~/.claude/skills/or-blip-2/SKILL.md` | Computer Vision | C |
-| llava | `~/.claude/skills/or-llava/SKILL.md` | Deep Learning | C |
-| stable-diffusion | `~/.claude/skills/or-stable-diffusion/SKILL.md` | Deep Learning | C |
-| whisper | `~/.claude/skills/or-whisper/SKILL.md` | Deep Learning | C |
-| audiocraft | `~/.claude/skills/or-audiocraft/SKILL.md` | Deep Learning | C |
-| openpi / openvla-oft / cosmos-policy | `~/.claude/skills/or-openpi/SKILL.md · ~/.claude/skills/or-openvla-oft/SKILL.md · ~/.claude/skills/or-cosmos-policy/SKILL.md` | Machine Learning (robotics) | X |
-| moe-training / model-merging / model-pruning / knowledge-distillation / long-context / speculative-decoding | `~/.claude/skills/or-moe-training/SKILL.md · ~/.claude/skills/or-model-merging/SKILL.md · ~/.claude/skills/or-model-pruning/SKILL.md · ~/.claude/skills/or-knowledge-distillation/SKILL.md · ~/.claude/skills/or-long-context/SKILL.md · ~/.claude/skills/or-speculative-decoding/SKILL.md` | Machine Learning | C / S |
-| academic-plotting | `~/.claude/skills/or-academic-plotting/SKILL.md` | Figure Creation | P |
-| ml-paper-writing | `~/.claude/skills/or-ml-paper-writing/SKILL.md` | Academic Writing | P |
-| systems-paper-writing | `~/.claude/skills/or-systems-paper-writing/SKILL.md` | Academic Writing | X |
-| presenting-conference-talks | `~/.claude/skills/or-presenting-conference-talks/SKILL.md` | Academic Writing (talks) | S |
-| brainstorming-research-ideas | `~/.claude/skills/or-brainstorming-research-ideas/SKILL.md` | Idea Discovery | S |
-| creative-thinking-for-research | `~/.claude/skills/or-creative-thinking-for-research/SKILL.md` | Idea Discovery | C |
-| compiler (ARA) | `~/.claude/skills/or-compiler/SKILL.md` | Research (ARA) | X |
-| research-manager (ARA) | `~/.claude/skills/or-research-manager/SKILL.md` | Research (provenance) | X |
-| rigor-reviewer (ARA) | `~/.claude/skills/or-rigor-reviewer/SKILL.md` | Verification | X |
+| autoresearch | `~/.claude/skills/0-autoresearch-skill/SKILL.md` | Research (two-loop orchestration) | S |
+| litgpt | `~/.claude/skills/litgpt/SKILL.md` | Deep Learning | S |
+| torchtitan | `~/.claude/skills/torchtitan/SKILL.md` | Deep Learning | S/X |
+| mamba / rwkv / nanogpt | `~/.claude/skills/mamba/SKILL.md · ~/.claude/skills/rwkv/SKILL.md · ~/.claude/skills/nanogpt/SKILL.md` | Deep Learning | S |
+| huggingface-tokenizers | `~/.claude/skills/huggingface-tokenizers/SKILL.md` | Machine Learning | P |
+| sentencepiece | `~/.claude/skills/sentencepiece/SKILL.md` | Machine Learning | S |
+| peft | `~/.claude/skills/peft/SKILL.md` | Machine Learning (PEFT) | P |
+| axolotl | `~/.claude/skills/axolotl/SKILL.md` | Machine Learning | F |
+| llama-factory / unsloth | `~/.claude/skills/llama-factory/SKILL.md · ~/.claude/skills/unsloth/SKILL.md` | Machine Learning | F (thin scraper stubs) |
+| transformer-lens | `~/.claude/skills/transformer-lens/SKILL.md` | Machine Learning (interp) | C |
+| saelens / nnsight / pyvene | `~/.claude/skills/saelens/SKILL.md · ~/.claude/skills/nnsight/SKILL.md · ~/.claude/skills/pyvene/SKILL.md` | Machine Learning (interp) | C |
+| ray-data | `~/.claude/skills/ray-data/SKILL.md` | Machine Learning (data) | S |
+| nemo-curator | `~/.claude/skills/nemo-curator/SKILL.md` | Machine Learning (data) | C |
+| trl-fine-tuning | `~/.claude/skills/trl-fine-tuning/SKILL.md` | Machine Learning (post-training) | P |
+| grpo-rl-training | `~/.claude/skills/grpo-rl-training/SKILL.md` | Machine Learning (RL) | P |
+| simpo | `~/.claude/skills/simpo/SKILL.md` | Machine Learning | S |
+| openrlhf | `~/.claude/skills/openrlhf/SKILL.md` | Machine Learning | S |
+| verl | `~/.claude/skills/verl/SKILL.md` | Machine Learning | S |
+| slime / miles / torchforge | `~/.claude/skills/slime/SKILL.md · ~/.claude/skills/miles/SKILL.md · ~/.claude/skills/torchforge/SKILL.md` | Machine Learning | C / X / F |
+| constitutional-ai | `~/.claude/skills/constitutional-ai/SKILL.md` | Machine Learning | C |
+| llamaguard | `~/.claude/skills/llamaguard/SKILL.md` | Machine Learning | S |
+| nemo-guardrails / prompt-guard | `~/.claude/skills/nemo-guardrails/SKILL.md · ~/.claude/skills/prompt-guard/SKILL.md` | Tool Usage | C |
+| accelerate | `~/.claude/skills/accelerate/SKILL.md` | Machine Learning | S |
+| deepspeed | `~/.claude/skills/deepspeed/SKILL.md` | Machine Learning | F (scraper dump) |
+| megatron-core | `~/.claude/skills/megatron-core/SKILL.md` | Machine Learning | X |
+| pytorch-fsdp2 | `~/.claude/skills/pytorch-fsdp2/SKILL.md` | Machine Learning | S |
+| pytorch-lightning | `~/.claude/skills/pytorch-lightning/SKILL.md` | Machine Learning | S |
+| ray-train | `~/.claude/skills/ray-train/SKILL.md` | Machine Learning | S |
+| modal | `~/.claude/skills/modal/SKILL.md` | Tool Usage | S |
+| skypilot | `~/.claude/skills/skypilot/SKILL.md` | Tool Usage | S |
+| lambda-labs | `~/.claude/skills/lambda-labs/SKILL.md` | Tool Usage | F |
+| flash-attention | `~/.claude/skills/flash-attention/SKILL.md` | Machine Learning | P |
+| bitsandbytes | `~/.claude/skills/bitsandbytes/SKILL.md` | Machine Learning | P |
+| gptq / awq | `~/.claude/skills/gptq/SKILL.md · ~/.claude/skills/awq/SKILL.md` | Machine Learning | S |
+| hqq | `~/.claude/skills/hqq/SKILL.md` | Machine Learning | C |
+| gguf | `~/.claude/skills/gguf/SKILL.md` | Machine Learning | S |
+| ml-training-recipes | `~/.claude/skills/ml-training-recipes/SKILL.md` | Machine Learning | P (broadest training playbook, incl. biomedical/medical imaging references) |
+| lm-evaluation-harness | `~/.claude/skills/lm-evaluation-harness/SKILL.md` | Evaluation | P |
+| bigcode-evaluation-harness | `~/.claude/skills/bigcode-evaluation-harness/SKILL.md` | Evaluation | S |
+| nemo-evaluator | `~/.claude/skills/nemo-evaluator/SKILL.md` | Evaluation | X |
+| vllm | `~/.claude/skills/vllm/SKILL.md` | Machine Learning (serving) | P |
+| tensorrt-llm | `~/.claude/skills/tensorrt-llm/SKILL.md` | Machine Learning | S |
+| sglang | `~/.claude/skills/sglang/SKILL.md` | Machine Learning | S |
+| llama-cpp | `~/.claude/skills/llama-cpp/SKILL.md` | Machine Learning | F |
+| weights-and-biases | `~/.claude/skills/weights-and-biases/SKILL.md` | MLOps | P |
+| mlflow | `~/.claude/skills/mlflow/SKILL.md` | MLOps | S |
+| tensorboard / swanlab | `~/.claude/skills/tensorboard/SKILL.md · ~/.claude/skills/swanlab/SKILL.md` | MLOps | C |
+| langchain / llamaindex | `~/.claude/skills/langchain/SKILL.md · ~/.claude/skills/llamaindex/SKILL.md` | Tool Usage | S |
+| crewai | `~/.claude/skills/crewai/SKILL.md` | Tool Usage | C |
+| autogpt | `~/.claude/skills/autogpt/SKILL.md` | Tool Usage | F |
+| a-evolve | `~/.claude/skills/a-evolve/SKILL.md` | Prompt Engineering | C |
+| chroma | `~/.claude/skills/chroma/SKILL.md` | Tool Usage (vector DB) | P |
+| faiss | `~/.claude/skills/faiss/SKILL.md` | Tool Usage | C |
+| qdrant | `~/.claude/skills/qdrant/SKILL.md` | Tool Usage | S |
+| pinecone | `~/.claude/skills/pinecone/SKILL.md` | Tool Usage | F |
+| sentence-transformers | `~/.claude/skills/sentence-transformers/SKILL.md` | Machine Learning (embeddings) | P |
+| dspy | `~/.claude/skills/dspy/SKILL.md` | Prompt Engineering | P |
+| instructor | `~/.claude/skills/instructor/SKILL.md` | Prompt Engineering | S |
+| outlines / guidance | `~/.claude/skills/outlines/SKILL.md · ~/.claude/skills/guidance/SKILL.md` | Prompt Engineering | S / C |
+| langsmith | `~/.claude/skills/langsmith/SKILL.md` | Tool Usage | S |
+| phoenix | `~/.claude/skills/phoenix/SKILL.md` | Tool Usage | S |
+| segment-anything | `~/.claude/skills/segment-anything/SKILL.md` | Computer Vision | P (default segmentation incl. medical-image workflows) |
+| clip | `~/.claude/skills/clip/SKILL.md` | Computer Vision | C |
+| blip-2 | `~/.claude/skills/blip-2/SKILL.md` | Computer Vision | C |
+| llava | `~/.claude/skills/llava/SKILL.md` | Deep Learning | C |
+| stable-diffusion | `~/.claude/skills/stable-diffusion/SKILL.md` | Deep Learning | C |
+| whisper | `~/.claude/skills/whisper/SKILL.md` | Deep Learning | C |
+| audiocraft | `~/.claude/skills/audiocraft/SKILL.md` | Deep Learning | C |
+| openpi / openvla-oft / cosmos-policy | `~/.claude/skills/openpi/SKILL.md · ~/.claude/skills/openvla-oft/SKILL.md · ~/.claude/skills/cosmos-policy/SKILL.md` | Machine Learning (robotics) | X |
+| moe-training / model-merging / model-pruning / knowledge-distillation / long-context / speculative-decoding | `~/.claude/skills/moe-training/SKILL.md · ~/.claude/skills/model-merging/SKILL.md · ~/.claude/skills/model-pruning/SKILL.md · ~/.claude/skills/knowledge-distillation/SKILL.md · ~/.claude/skills/long-context/SKILL.md · ~/.claude/skills/speculative-decoding/SKILL.md` | Machine Learning | C / S |
+| academic-plotting | `~/.claude/skills/academic-plotting/SKILL.md` | Figure Creation | P |
+| ml-paper-writing | `~/.claude/skills/ml-paper-writing/SKILL.md` | Academic Writing | P |
+| systems-paper-writing | `~/.claude/skills/systems-paper-writing/SKILL.md` | Academic Writing | X |
+| presenting-conference-talks | `~/.claude/skills/presenting-conference-talks/SKILL.md` | Academic Writing (talks) | S |
+| brainstorming-research-ideas | `~/.claude/skills/brainstorming-research-ideas/SKILL.md` | Idea Discovery | S |
+| creative-thinking-for-research | `~/.claude/skills/creative-thinking-for-research/SKILL.md` | Idea Discovery | C |
+| compiler (ARA) | `~/.claude/skills/compiler/SKILL.md` | Research (ARA) | X |
+| research-manager (ARA) | `~/.claude/skills/research-manager/SKILL.md` | Research (provenance) | X |
+| rigor-reviewer (ARA) | `~/.claude/skills/rigor-reviewer/SKILL.md` | Verification | X |
 
 Key verbatim rules:
 - ml-paper-writing: "NEVER generate BibTeX entries from memory. ALWAYS fetch programmatically." (cites ~40% AI citation error rate; 6-step workflow with [CITATION NEEDED]/[PLACEHOLDER - VERIFY] fallbacks).
@@ -367,21 +382,21 @@ Key verbatim rules:
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| systematic-debugging | `~/.claude/skills/sp-systematic-debugging/SKILL.md` | Debugging | P |
-| verification-before-completion | `~/.claude/skills/sp-verification-before-completion/SKILL.md` | Verification | P |
-| requesting-code-review | `~/.claude/skills/sp-requesting-code-review/SKILL.md` | Code Review | P |
-| writing-plans | `~/.claude/skills/sp-writing-plans/SKILL.md` | Coding (planning) | P |
-| test-driven-development | `~/.claude/skills/sp-test-driven-development/SKILL.md` | Coding | S |
-| brainstorming | `~/.claude/skills/sp-brainstorming/SKILL.md` | Idea Refinement (engineering) | C |
-| subagent-driven-development | `~/.claude/skills/sp-subagent-driven-development/SKILL.md` | Coding (orchestration) | C |
-| executing-plans | `~/.claude/skills/sp-executing-plans/SKILL.md` | Coding | C |
-| dispatching-parallel-agents | `~/.claude/skills/sp-dispatching-parallel-agents/SKILL.md` | Coding | C |
-| receiving-code-review | `~/.claude/skills/sp-receiving-code-review/SKILL.md` | Code Review | S |
-| writing-skills | `~/.claude/skills/sp-writing-skills/SKILL.md` | Prompt Engineering (skill authoring) | S |
-| using-git-worktrees | `~/.claude/skills/sp-using-git-worktrees/SKILL.md` | Tool Usage (git) | C |
-| finishing-a-development-branch | `~/.claude/skills/sp-finishing-a-development-branch/SKILL.md` | Tool Usage (git) | X |
-| diagnosing-superpowers | `~/.claude/skills/sp-diagnosing-superpowers/SKILL.md` | Debugging (meta) | X |
-| using-superpowers | `~/.claude/skills/sp-using-superpowers/SKILL.md` | Meta | C (bootstrap; invokes relevant skills before acting) |
+| systematic-debugging | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/systematic-debugging/SKILL.md` | Debugging | P |
+| verification-before-completion | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/verification-before-completion/SKILL.md` | Verification | P |
+| requesting-code-review | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/requesting-code-review/SKILL.md` | Code Review | P |
+| writing-plans | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/writing-plans/SKILL.md` | Coding (planning) | P |
+| test-driven-development | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/test-driven-development/SKILL.md` | Coding | S |
+| brainstorming | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/brainstorming/SKILL.md` | Idea Refinement (engineering) | C |
+| subagent-driven-development | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/subagent-driven-development/SKILL.md` | Coding (orchestration) | C |
+| executing-plans | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/SKILL.md` | Coding | C |
+| dispatching-parallel-agents | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/dispatching-parallel-agents/SKILL.md` | Coding | C |
+| receiving-code-review | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/receiving-code-review/SKILL.md` | Code Review | S |
+| writing-skills | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/writing-skills/SKILL.md` | Prompt Engineering (skill authoring) | S |
+| using-git-worktrees | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/using-git-worktrees/SKILL.md` | Tool Usage (git) | C |
+| finishing-a-development-branch | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/finishing-a-development-branch/SKILL.md` | Tool Usage (git) | X |
+| diagnosing-superpowers | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/diagnosing-superpowers/SKILL.md` | Debugging (meta) | X |
+| using-superpowers | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/using-superpowers/SKILL.md` | Meta | C (bootstrap; invokes relevant skills before acting) |
 
 Key verbatim rules: systematic-debugging — root cause before fix (4-phase Iron Law); after 3 failed fix attempts, question the architecture. verification-before-completion — fresh command output required before any success claim. No research-domain skills in this repo.
 
@@ -389,17 +404,17 @@ Key verbatim rules: systematic-debugging — root cause before fix (4-phase Iron
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| review-paper | `~/.claude/skills/arf-review-paper/SKILL.md` | Verification (paper review) | S |
-| review-paper-light | `~/.claude/skills/arf-review-paper-light/SKILL.md` | Verification | S |
-| review-paper-checks | `~/.claude/skills/arf-review-paper-checks/SKILL.md` | Verification | S |
-| review-paper-code | `~/.claude/skills/arf-review-paper-code/SKILL.md` | Verification (code) | P (empirical papers) |
-| review-pap | `~/.claude/skills/arf-review-pap/SKILL.md` | Statistics (reviewer) | S |
-| review-grant | `~/.claude/skills/arf-review-grant/SKILL.md` | Grant Writing (review) | S |
-| audit-analysis | `~/.claude/skills/arf-audit-analysis/SKILL.md` | Verification (analysis) | P |
-| explain-diff | `~/.claude/skills/arf-explain-diff/SKILL.md` | Verification (diff) | C |
-| paper-version | `~/.claude/skills/arf-paper-version/SKILL.md` | Tool Usage | C |
-| pdf-to-markdown | `~/.claude/skills/arf-pdf-to-markdown/SKILL.md` | Tool Usage | P (ingestion) |
-| explorable-deck | `~/.claude/skills/arf-explorable-deck/SKILL.md` | Figure Creation | F |
+| review-paper | `~/.claude/skills/review-paper/SKILL.md` | Verification (paper review) | S |
+| review-paper-light | `~/.claude/skills/review-paper-light/SKILL.md` | Verification | S |
+| review-paper-checks | `~/.claude/skills/review-paper-checks/SKILL.md` | Verification | S |
+| review-paper-code | `~/.claude/skills/review-paper-code/SKILL.md` | Verification (code) | P (empirical papers) |
+| review-pap | `~/.claude/skills/review-pap/SKILL.md` | Statistics (reviewer) | S |
+| review-grant | `~/.claude/skills/review-grant/SKILL.md` | Grant Writing (review) | S |
+| audit-analysis | `~/.claude/skills/audit-analysis/SKILL.md` | Verification (analysis) | P |
+| explain-diff | `~/.claude/skills/explain-diff/SKILL.md` | Verification (diff) | C |
+| paper-version | `~/.claude/skills/paper-version/SKILL.md` | Tool Usage | C |
+| pdf-to-markdown | `~/.claude/skills/pdf-to-markdown/SKILL.md` | Tool Usage | P (ingestion) |
+| explorable-deck | `~/.claude/skills/explorable-deck/SKILL.md` | Figure Creation | F |
 
 Key verbatim rules:
 - review-paper: "Review ONLY the files listed at the end of this prompt"; ignore prior review reports and `%`-commented LaTeX; rating Transformative/Significant/Incremental/Insufficient; standing caveat "Novelty relative to literature not cited in the paper has not been verified."
@@ -411,11 +426,11 @@ Key verbatim rules:
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| nature-figure | `~/.claude/skills/ns-nature-figure/SKILL.md` | Figure Creation | P |
-| nature-polishing | `~/.claude/skills/ns-nature-polishing/SKILL.md` | Academic Writing | P |
-| nature-citation | `~/.claude/skills/ns-nature-citation/SKILL.md` | Literature Review (citation) | P |
-| nature-data | `~/.claude/skills/ns-nature-data/SKILL.md` | Academic Writing (data availability) | S |
-| nature-paper2ppt | `~/.claude/skills/ns-nature-paper2ppt/SKILL.md` | Figure Creation (PPT) | C |
+| nature-figure | `~/.claude/skills/nature-figure/SKILL.md` | Figure Creation | P |
+| nature-polishing | `~/.claude/skills/nature-polishing/SKILL.md` | Academic Writing | P |
+| nature-citation | `~/.claude/skills/nature-citation/SKILL.md` | Literature Review (citation) | P |
+| nature-data | `~/.claude/skills/nature-data/SKILL.md` | Academic Writing (data availability) | S |
+| nature-paper2ppt | `~/.claude/skills/nature-paper2ppt/SKILL.md` | Figure Creation (PPT) | C |
 
 Key verbatim rules:
 - nature-figure: figure contract mandatory before plotting; backend selection is a blocking gate ("ask one concise question: Python or R? Then stop"); sans-serif fonts mandatory; primary output SVG; QA contract includes statistics legend (n definition, replicates, center/spread, test, correction, p-value display, source-data file) + ML additions (train/val/test split, seeds or folds, metric, CI/variability, baseline).
@@ -428,32 +443,32 @@ Key verbatim rules:
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| papers-skill | `~/.claude/skills/aas-papers-skill/SKILL.md` | Literature Review | P |
-| ii-commons | `~/.claude/skills/aas-ii-commons/SKILL.md` | Literature Review | P (biomedical/policy search) |
-| deep-research-framework | `~/.claude/skills/aas-deep-research-framework/SKILL.md` | Research | P |
-| dsh-deepread | `~/.claude/skills/aas-dsh-deepread/SKILL.md` | Literature Review | S |
-| verify-citations | `~/.claude/skills/aas-verify-citations/SKILL.md` | Verification | F (privacy gate) |
-| multi-source-search | `~/.claude/skills/aas-multi-source-search/SKILL.md` | Verification | S |
-| efficient-web-research | `~/.claude/skills/aas-efficient-web-research/SKILL.md` | Token Optimization | P |
-| hugging-face-papers | `~/.claude/skills/aas-hugging-face-papers/SKILL.md` | Literature Review | C |
-| falsify | `~/.claude/skills/aas-falsify/SKILL.md` | Verification | S |
-| axiom | `~/.claude/skills/aas-axiom/SKILL.md` | Verification | S |
-| verification-before-completion | `~/.claude/skills/aas-verification-before-completion/SKILL.md` | Verification | F |
-| systematic-debugging | `~/.claude/skills/aas-systematic-debugging/SKILL.md` | Debugging | F |
-| code-review-and-quality | `~/.claude/skills/aas-code-review-and-quality/SKILL.md` | Code Review | S |
-| computer-vision-expert | `~/.claude/skills/aas-computer-vision-expert/SKILL.md` | Computer Vision | C |
-| hugging-face-model-trainer | `~/.claude/skills/aas-hugging-face-model-trainer/SKILL.md` | Deep Learning | P |
-| hugging-face-vision-trainer | `~/.claude/skills/aas-hugging-face-vision-trainer/SKILL.md` | Computer Vision | P |
-| context-engineering | `~/.claude/skills/aas-context-engineering/SKILL.md` | Context Engineering | S |
-| prompt-engineering | `~/.claude/skills/aas-prompt-engineering/SKILL.md` | Prompt Engineering | S |
-| recursive-context-pruning-token-budgeting | `~/.claude/skills/aas-recursive-context-pruning-token-budgeting/SKILL.md` | Context Engineering | C |
-| dos-verify-done-claims | `~/.claude/skills/aas-dos-verify-done-claims/SKILL.md` | Verification | S |
-| scanpy | `~/.claude/skills/aas-scanpy/SKILL.md` | Machine Learning (biomedical) | P (biomedical single-cell) |
-| ml-engineer | `~/.claude/skills/aas-ml-engineer/SKILL.md` | Machine Learning | S |
-| scientific-writing | `~/.claude/skills/aas-scientific-writing/SKILL.md` | Academic Writing | S (2KB index → read references/detailed-guide.md first) |
-| tech-writing-proofread | `~/.claude/skills/aas-tech-writing-proofread/SKILL.md` | Academic Writing | S ("Fix language, not facts"; one pass) |
-| latex-paper-conversion | `~/.claude/skills/aas-latex-paper-conversion/SKILL.md` | Academic Writing | C |
-| survey-generator | `~/.claude/skills/aas-survey-generator/SKILL.md` | Academic Writing | S ("Never invent bibliography entries") |
+| papers-skill | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/papers-skill/SKILL.md` | Literature Review | P |
+| ii-commons | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/ii-commons/SKILL.md` | Literature Review | P (biomedical/policy search) |
+| deep-research-framework | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/deep-research-framework/SKILL.md` | Research | P |
+| dsh-deepread | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/dsh-deepread/SKILL.md` | Literature Review | S |
+| verify-citations | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/verify-citations/SKILL.md` | Verification | F (privacy gate) |
+| multi-source-search | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/multi-source-search/SKILL.md` | Verification | S |
+| efficient-web-research | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/efficient-web-research/SKILL.md` | Token Optimization | P |
+| hugging-face-papers | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/hugging-face-papers/SKILL.md` | Literature Review | C |
+| falsify | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/falsify/SKILL.md` | Verification | S |
+| axiom | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/axiom/SKILL.md` | Verification | S |
+| verification-before-completion | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/verification-before-completion/SKILL.md` | Verification | F |
+| systematic-debugging | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/systematic-debugging/SKILL.md` | Debugging | F |
+| code-review-and-quality | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/code-review-and-quality/SKILL.md` | Code Review | S |
+| computer-vision-expert | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/computer-vision-expert/SKILL.md` | Computer Vision | C |
+| hugging-face-model-trainer | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/hugging-face-model-trainer/SKILL.md` | Deep Learning | P |
+| hugging-face-vision-trainer | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/hugging-face-vision-trainer/SKILL.md` | Computer Vision | P |
+| context-engineering | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/context-engineering/SKILL.md` | Context Engineering | S |
+| prompt-engineering | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/prompt-engineering/SKILL.md` | Prompt Engineering | S |
+| recursive-context-pruning-token-budgeting | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/recursive-context-pruning-token-budgeting/SKILL.md` | Context Engineering | C |
+| dos-verify-done-claims | `~/.claude/upstream/agentic-awesome-skills/skills/dos-verify-done-claims/SKILL.md` | Verification | S |
+| scanpy | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/scanpy/SKILL.md` | Machine Learning (biomedical) | P (biomedical single-cell) |
+| ml-engineer | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/ml-engineer/SKILL.md` | Machine Learning | S |
+| scientific-writing | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/scientific-writing/SKILL.md` | Academic Writing | S (2KB index → read references/detailed-guide.md first) |
+| tech-writing-proofread | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/tech-writing-proofread/SKILL.md` | Academic Writing | S ("Fix language, not facts"; one pass) |
+| latex-paper-conversion | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/latex-paper-conversion/SKILL.md` | Academic Writing | C |
+| survey-generator | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/survey-generator/SKILL.md` | Academic Writing | S ("Never invent bibliography entries") |
 
 Key verbatim rules:
 - deep-research-framework: "Every number in the report has a source. A number without a source is deleted, not rewritten."; "State 'what you don't know' before 'what you know'."; tertiary sources are "leads only, never evidence".
@@ -470,46 +485,46 @@ Key verbatim rules:
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| research router | `~/.claude/skills/cs-research/SKILL.md` | Tool Usage (routing reference) | C |
-| litreview | `~/.claude/skills/cs-litreview/SKILL.md` | Literature Review | P (biomedical) |
-| deep-research | `~/.claude/skills/cs-deep-research/SKILL.md` | Research | S |
-| deepread | `~/.claude/skills/cs-deepread/SKILL.md` | Literature Review | P (reading protocol) |
-| grants | `~/.claude/skills/cs-grants/SKILL.md` | Grant Writing | S |
-| pulse | `~/.claude/skills/cs-pulse/SKILL.md` | Idea Discovery (trend mining) | C |
-| dossier | `~/.claude/skills/cs-dossier/SKILL.md` | Novelty | C |
-| patent / syllabus / notebooklm | `~/.claude/skills/cs-patent/SKILL.md · ~/.claude/skills/cs-syllabus/SKILL.md · ~/.claude/skills/cs-notebooklm/SKILL.md` | — | X |
-| clinical-research | `~/.claude/skills/cs-clinical-research/SKILL.md` | Experiment Design (medical) | P (medical) |
-| research-ops-skills | `~/.claude/skills/cs-research-ops-skills/SKILL.md` | Tool Usage (4-lane router) | S |
-| research-finance / market-research / product-research | `~/.claude/skills/cs-research-finance/SKILL.md · ~/.claude/skills/cs-market-research/SKILL.md · ~/.claude/skills/cs-product-research/SKILL.md` | — | C / X |
-| statistical-analyst | `~/.claude/skills/cs-statistical-analyst/SKILL.md` | Statistics | P |
-| zero-hallucination-coder | `~/.claude/skills/cs-zero-hallucination-coder/SKILL.md` | Coding | P |
-| deep-learning-book | `~/.claude/skills/cs-deep-learning-book/SKILL.md` | Deep Learning (theory companion) | P |
-| agent-harness | `~/.claude/skills/cs-agent-harness/SKILL.md` | Verification (harness) | S |
-| autoresearch-agent | `~/.claude/skills/cs-autoresearch-agent/SKILL.md` | Machine Learning (experiment loop) | S |
-| human-gate | `~/.claude/skills/cs-human-gate/SKILL.md` | Verification | S (P for clinical) |
-| loop-library | `~/.claude/skills/cs-loop-library/SKILL.md` | Verification (loop discipline) | S |
-| llm-wiki | `~/.claude/skills/cs-llm-wiki/SKILL.md` | Context Engineering (vault) | X |
-| memory-engineering | `~/.claude/skills/cs-memory-engineering/SKILL.md` | Context Engineering | C |
-| grill-me / grill-with-docs | `~/.claude/skills/cs-grill-me/SKILL.md · ~/.claude/skills/cs-grill-with-docs/SKILL.md` | Debugging | S |
-| data-quality-auditor | `~/.claude/skills/cs-data-quality-auditor/SKILL.md` | Verification (data) | S |
-| performance-profiler | `~/.claude/skills/cs-performance-profiler/SKILL.md` | Code Optimization | S |
-| focused-fix | `~/.claude/skills/cs-focused-fix/SKILL.md` | Code Optimization | S |
-| senior-computer-vision | `~/.claude/skills/cs-senior-computer-vision/SKILL.md` | Computer Vision | P |
-| senior-data-scientist | `~/.claude/skills/cs-senior-data-scientist/SKILL.md` | Statistics / Experiment Design | S |
-| senior-prompt-engineer | `~/.claude/skills/cs-senior-prompt-engineer/SKILL.md` | Prompt Engineering | P |
-| senior-ml-engineer | `~/.claude/skills/cs-senior-ml-engineer/SKILL.md` | Machine Learning | S |
-| code-reviewer | `~/.claude/skills/cs-code-reviewer/SKILL.md` | Code Review | F (mechanical gate) |
-| adversarial-reviewer | `~/.claude/skills/cs-adversarial-reviewer/SKILL.md` | Code Review | C |
-| named-persona-adversarial-review | `~/.claude/skills/cs-named-persona-adversarial-review/SKILL.md` | Code Review | C |
-| risk-management-specialist / mdr-745-specialist / fda-consultant-specialist / eu-ai-act-specialist | `~/.claude/skills/cs-risk-management-specialist/SKILL.md · ~/.claude/skills/cs-mdr-745-specialist/SKILL.md · ~/.claude/skills/cs-fda-consultant-specialist/SKILL.md · ~/.claude/skills/cs-eu-ai-act-specialist/SKILL.md` | Medical/regulatory | S |
-| iso42001-specialist / quality-manager-qms-iso13485 / quality-manager-qmr / quality-documentation-manager / regulatory-affairs-head / capa-officer / gdpr-dsgvo-expert | `~/.claude/skills/cs-iso42001-specialist/SKILL.md · ~/.claude/skills/cs-quality-manager-qms-iso13485/SKILL.md · ~/.claude/skills/cs-quality-manager-qmr/SKILL.md · ~/.claude/skills/cs-quality-documentation-manager/SKILL.md · ~/.claude/skills/cs-regulatory-affairs-head/SKILL.md · ~/.claude/skills/cs-capa-officer/SKILL.md · ~/.claude/skills/cs-gdpr-dsgvo-expert/SKILL.md` | Medical/regulatory | C |
+| research router | `~/.claude/plugins/marketplaces/claude-code-skills/research/research/skills/research/SKILL.md` | Tool Usage (routing reference) | C |
+| litreview | `~/.claude/plugins/marketplaces/claude-code-skills/research/litreview/skills/litreview/SKILL.md` | Literature Review | P (biomedical) |
+| deep-research | `~/.claude/plugins/marketplaces/claude-code-skills/research/deep-research/skills/deep-research/SKILL.md` | Research | S |
+| deepread | `~/.claude/plugins/marketplaces/claude-code-skills/research/deepread/SKILL.md` | Literature Review | P (reading protocol) |
+| grants | `~/.claude/plugins/marketplaces/claude-code-skills/research/grants/skills/grants/SKILL.md` | Grant Writing | S |
+| pulse | `~/.claude/plugins/marketplaces/claude-code-skills/research/pulse/skills/pulse/SKILL.md` | Idea Discovery (trend mining) | C |
+| dossier | `~/.claude/plugins/marketplaces/claude-code-skills/research/dossier/skills/dossier/SKILL.md` | Novelty | C |
+| patent / syllabus / notebooklm | `~/.claude/plugins/marketplaces/claude-code-skills/research/patent/skills/patent/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/research/syllabus/skills/syllabus/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/research/notebooklm/skills/notebooklm/SKILL.md` | — | X |
+| clinical-research | `~/.claude/plugins/marketplaces/claude-code-skills/research-ops/skills/clinical-research/SKILL.md` | Experiment Design (medical) | P (medical) |
+| research-ops-skills | `~/.claude/plugins/marketplaces/claude-code-skills/research-ops/skills/research-ops-skills/SKILL.md` | Tool Usage (4-lane router) | S |
+| research-finance / market-research / product-research | `~/.claude/plugins/marketplaces/claude-code-skills/research-ops/skills/research-finance/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/research-ops/skills/market-research/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/research-ops/skills/product-research/SKILL.md` | — | C / X |
+| statistical-analyst | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/statistical-analyst/skills/statistical-analyst/SKILL.md` | Statistics | P |
+| zero-hallucination-coder | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/zero-hallucination-coder/skills/zero-hallucination-coder/SKILL.md` | Coding | P |
+| deep-learning-book | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/deep-learning-book/skills/deep-learning-book/SKILL.md` | Deep Learning (theory companion) | P |
+| agent-harness | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/agent-harness/skills/agent-harness/SKILL.md` | Verification (harness) | S |
+| autoresearch-agent | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/autoresearch-agent/skills/autoresearch-agent/SKILL.md` | Machine Learning (experiment loop) | S |
+| human-gate | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/human-gate/skills/human-gate/SKILL.md` | Verification | S (P for clinical) |
+| loop-library | `~/.claude/plugins/marketplaces/claude-code-skills/loop-library/SKILL.md` | Verification (loop discipline) | S |
+| llm-wiki | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/llm-wiki/skills/llm-wiki/SKILL.md` | Context Engineering (vault) | X |
+| memory-engineering | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/memory-engineering/skills/memory-engineering/SKILL.md` | Context Engineering | C |
+| grill-me / grill-with-docs | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/grill-me/skills/grill-me/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/engineering/grill-with-docs/skills/grill-with-docs/SKILL.md` | Debugging | S |
+| data-quality-auditor | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/data-quality-auditor/skills/data-quality-auditor/SKILL.md` | Verification (data) | S |
+| performance-profiler | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/skills/performance-profiler/SKILL.md` | Code Optimization | S |
+| focused-fix | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/skills/focused-fix/SKILL.md` | Code Optimization | S |
+| senior-computer-vision | `~/.claude/plugins/marketplaces/claude-code-skills/engineering-team/skills/senior-computer-vision/SKILL.md` | Computer Vision | P |
+| senior-data-scientist | `~/.claude/plugins/marketplaces/claude-code-skills/engineering-team/skills/senior-data-scientist/SKILL.md` | Statistics / Experiment Design | S |
+| senior-prompt-engineer | `~/.claude/plugins/marketplaces/claude-code-skills/engineering-team/skills/senior-prompt-engineer/SKILL.md` | Prompt Engineering | P |
+| senior-ml-engineer | `~/.claude/plugins/marketplaces/claude-code-skills/engineering-team/skills/senior-ml-engineer/SKILL.md` | Machine Learning | S |
+| code-reviewer | `~/.claude/plugins/marketplaces/claude-code-skills/engineering-team/skills/code-reviewer/SKILL.md` | Code Review | F (mechanical gate) |
+| adversarial-reviewer | `~/.claude/plugins/marketplaces/claude-code-skills/engineering-team/skills/adversarial-reviewer/SKILL.md` | Code Review | C |
+| named-persona-adversarial-review | `~/.claude/plugins/marketplaces/claude-code-skills/engineering-team/skills/named-persona-adversarial-review/SKILL.md` | Code Review | C |
+| risk-management-specialist / mdr-745-specialist / fda-consultant-specialist / eu-ai-act-specialist | `~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/risk-management-specialist/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/mdr-745-specialist/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/fda-consultant-specialist/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/compliance-team-eu-ai-act/skills/eu-ai-act-specialist/SKILL.md` | Medical/regulatory | S |
+| iso42001-specialist / quality-manager-qms-iso13485 / quality-manager-qmr / quality-documentation-manager / regulatory-affairs-head / capa-officer / gdpr-dsgvo-expert | `~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/compliance-team-iso42001/skills/iso42001-specialist/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/quality-manager-qms-iso13485/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/quality-manager-qmr/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/quality-documentation-manager/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/regulatory-affairs-head/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/capa-officer/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/gdpr-dsgvo-expert/SKILL.md` | Medical/regulatory | C |
 | standards/ (quality, communication, documentation, git, security) | `~/.claude/upstream/claude-skills/standards/` (reference docs — không có SKILL.md, tham khảo trực tiếp từ upstream) | Coding standards | S (quality/security) |
-| handoff | `~/.claude/skills/cs-handoff/SKILL.md` | Context Engineering (continuity) | S |
-| md-document (+ design-system) | `~/.claude/skills/cs-md-document/SKILL.md (+ cs-design-system prerequisite)` | Tool Usage | S |
-| agent-launcher | `~/.claude/skills/cs-agent-launcher-orchestrator/SKILL.md` | Tool Usage | X |
-| self-eval | `~/.claude/skills/cs-self-eval/SKILL.md` | Verification | S |
-| llm-cost-optimizer | `~/.claude/skills/cs-llm-cost-optimizer/SKILL.md` | Token Optimization | C |
-| prompt-governance | `~/.claude/skills/cs-prompt-governance/SKILL.md` | Prompt Engineering | C |
+| handoff | `~/.claude/plugins/marketplaces/claude-code-skills/productivity/handoff/skills/handoff/SKILL.md` | Context Engineering (continuity) | S |
+| md-document (+ design-system) | `~/.claude/plugins/marketplaces/claude-code-skills/markdown-html/skills/md-document/SKILL.md (+ cs-design-system prerequisite)` | Tool Usage | S |
+| agent-launcher | `~/.claude/plugins/marketplaces/claude-code-skills/agent-launcher/skills/agent-launcher-orchestrator/SKILL.md` | Tool Usage | X |
+| self-eval | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/skills/self-eval/SKILL.md` | Verification | S |
+| llm-cost-optimizer | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/llm-cost-optimizer/skills/llm-cost-optimizer/SKILL.md` | Token Optimization | C |
+| prompt-governance | `~/.claude/plugins/marketplaces/claude-code-skills/engineering/prompt-governance/skills/prompt-governance/SKILL.md` | Prompt Engineering | C |
 
 Key verbatim rules:
 - research router: "Never delegates silently."; max(score) ≥ 2 → silent route; "Cite only sources returned by this session's tool calls. Training knowledge labeled `[Background — not from search]`."
@@ -530,18 +545,18 @@ License: **CC BY-NC-SA 4.0** (non-commercial, share-alike, attribution). Referen
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| deep-research | `~/.claude/skills/ss-deep-research/SKILL.md` | Literature Review | P |
-| idea-evaluator | `~/.claude/skills/ss-idea-evaluator/SKILL.md` | Idea Refinement | S |
-| paper-writer | `~/.claude/skills/ss-paper-writer/SKILL.md` | Academic Writing | P |
-| intro-drafter | `~/.claude/skills/ss-intro-drafter/SKILL.md` | Academic Writing | C |
-| tech-paper-template | `~/.claude/skills/ss-tech-paper-template/SKILL.md` | Academic Writing | C |
-| benchmark-paper-template | `~/.claude/skills/ss-benchmark-paper-template/SKILL.md` | Experiment Design | X |
-| figure-designer | `~/.claude/skills/ss-figure-designer/SKILL.md` | Figure Creation | C |
-| paper-polish | `~/.claude/skills/ss-paper-polish/SKILL.md` | Academic Writing | S |
-| pre-submission-reviewer | `~/.claude/skills/ss-pre-submission-reviewer/SKILL.md` | Verification | S |
-| vibe-research-workflow | `~/.claude/skills/ss-vibe-research-workflow/SKILL.md` | Tool Usage (integrity contract) | C |
-| drawio-reconstruction | `~/.claude/skills/ss-drawio-reconstruction/SKILL.md` | Figure Creation | C |
-| rebuttal-guidance | `~/.claude/skills/ss-rebuttal-guidance/SKILL.md` | Academic Writing (rebuttal) | C |
+| deep-research | `~/.claude/skills/deep-research/SKILL.md` | Literature Review | P |
+| idea-evaluator | `~/.claude/skills/idea-evaluator/SKILL.md` | Idea Refinement | S |
+| paper-writer | `~/.claude/skills/paper-writer/SKILL.md` | Academic Writing | P |
+| intro-drafter | `~/.claude/skills/intro-drafter/SKILL.md` | Academic Writing | C |
+| tech-paper-template | `~/.claude/skills/tech-paper-template/SKILL.md` | Academic Writing | C |
+| benchmark-paper-template | `~/.claude/skills/benchmark-paper-template/SKILL.md` | Experiment Design | X |
+| figure-designer | `~/.claude/skills/figure-designer/SKILL.md` | Figure Creation | C |
+| paper-polish | `~/.claude/skills/paper-polish/SKILL.md` | Academic Writing | S |
+| pre-submission-reviewer | `~/.claude/skills/pre-submission-reviewer/SKILL.md` | Verification | S |
+| vibe-research-workflow | `~/.claude/skills/vibe-research-workflow/SKILL.md` | Tool Usage (integrity contract) | C |
+| drawio-reconstruction | `~/.claude/skills/drawio-reconstruction/SKILL.md` | Figure Creation | C |
+| rebuttal-guidance | `~/.claude/skills/rebuttal-guidance/SKILL.md` | Academic Writing (rebuttal) | C |
 
 Key verbatim rules:
 - deep-research: "With no retrieval at all, this skill does not run: say so rather than writing a survey from memory."; "One fewer reference always beats one invented reference."; "contradictions are presented with condition analysis, never averaged away."
@@ -556,21 +571,21 @@ Key verbatim rules:
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| context-fundamentals | `~/.claude/skills/ctx-context-fundamentals/SKILL.md` | Context Engineering | P |
-| context-degradation | `~/.claude/skills/ctx-context-degradation/SKILL.md` | Context Engineering | P |
-| context-compression | `~/.claude/skills/ctx-context-compression/SKILL.md` | Context Engineering / Token Optimization | P |
-| context-optimization | `~/.claude/skills/ctx-context-optimization/SKILL.md` | Context Engineering | P |
-| filesystem-context | `~/.claude/skills/ctx-filesystem-context/SKILL.md` | Context Engineering | S |
-| self-managed-context | `~/.claude/skills/ctx-self-managed-context/SKILL.md` | Context Engineering | S |
-| memory-systems | `~/.claude/skills/ctx-memory-systems/SKILL.md` | Context Engineering | S |
-| latent-briefing | `~/.claude/skills/ctx-latent-briefing/SKILL.md` | Context Engineering | S |
-| long-horizon-prompting | `~/.claude/skills/ctx-long-horizon-prompting/SKILL.md` | Prompt Engineering | S |
-| tool-design | `~/.claude/skills/ctx-tool-design/SKILL.md` | Tool Usage | P |
-| evaluation / advanced-evaluation | `~/.claude/skills/ctx-evaluation/SKILL.md · ~/.claude/skills/ctx-advanced-evaluation/SKILL.md` | Verification (agent evals) | S |
-| harness-engineering | `~/.claude/skills/ctx-harness-engineering/SKILL.md` | Tool Usage | S |
-| multi-agent-patterns | `~/.claude/skills/ctx-multi-agent-patterns/SKILL.md` | Tool Usage | S |
-| hosted-agents / self-improvement-loops / project-development | `~/.claude/skills/ctx-hosted-agents/SKILL.md · ~/.claude/skills/ctx-self-improvement-loops/SKILL.md · ~/.claude/skills/ctx-project-development/SKILL.md` | Tool Usage | S / C |
-| bdi-mental-states | `~/.claude/skills/ctx-bdi-mental-states/SKILL.md` | — | X |
+| context-fundamentals | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/context-fundamentals/SKILL.md` | Context Engineering | P |
+| context-degradation | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/context-degradation/SKILL.md` | Context Engineering | P |
+| context-compression | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/context-compression/SKILL.md` | Context Engineering / Token Optimization | P |
+| context-optimization | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/context-optimization/SKILL.md` | Context Engineering | P |
+| filesystem-context | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/filesystem-context/SKILL.md` | Context Engineering | S |
+| self-managed-context | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/self-managed-context/SKILL.md` | Context Engineering | S |
+| memory-systems | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/memory-systems/SKILL.md` | Context Engineering | S |
+| latent-briefing | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/latent-briefing/SKILL.md` | Context Engineering | S |
+| long-horizon-prompting | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/long-horizon-prompting/SKILL.md` | Prompt Engineering | S |
+| tool-design | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/tool-design/SKILL.md` | Tool Usage | P |
+| evaluation / advanced-evaluation | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/evaluation/SKILL.md · ~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/advanced-evaluation/SKILL.md` | Verification (agent evals) | S |
+| harness-engineering | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/harness-engineering/SKILL.md` | Tool Usage | S |
+| multi-agent-patterns | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/multi-agent-patterns/SKILL.md` | Tool Usage | S |
+| hosted-agents / self-improvement-loops / project-development | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/hosted-agents/SKILL.md · ~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/self-improvement-loops/SKILL.md · ~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/project-development/SKILL.md` | Tool Usage | S / C |
+| bdi-mental-states | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/bdi-mental-states/SKILL.md` | — | X |
 
 Key verbatim rules:
 - "Context quality over quantity"; "Sub-agents isolate context… not simulate org roles"; "Deterministic first, model-judged second"; "Human-controlled merge."
@@ -585,13 +600,13 @@ Key verbatim rules:
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| academic-researcher | `~/.claude/agents/tk-academic-researcher.md` | Research | P |
-| autoresearch-agent | `~/.claude/agents/tk-autoresearch-agent.md` | Machine Learning (experiment loop) | F |
-| computer-vision-engineer | `~/.claude/agents/tk-computer-vision-engineer.md` | Computer Vision | S |
-| deep-dive | `~/.claude/skills/tk-deep-dive/SKILL.md` (deep-dive research agent) | Research | S |
-| research MCP config | `~/.claude/upstream/awesome-claude-code-toolkit/mcp-configs/research.json` | Tool Usage | C (BGPT scientific-paper search, Brave Search, knowledge-graph memory, filesystem) |
-| research context | `~/.claude/upstream/awesome-claude-code-toolkit/contexts/research.md` | Context Engineering | C ("Do not recommend a tool based on popularity alone"; 30-minute time-box) |
-| claude-memory-kit / prompt-engineering / continuous-learning | `~/.claude/skills/tk-claude-memory-kit/SKILL.md · ~/.claude/skills/tk-prompt-engineering/SKILL.md · ~/.claude/skills/tk-continuous-learning/SKILL.md` | Context Engineering / Prompt Engineering | C |
+| academic-researcher | `~/.claude/agents/academic-researcher.md` | Research | P |
+| autoresearch-agent | `~/.claude/agents/autoresearch-agent.md` | Machine Learning (experiment loop) | F |
+| computer-vision-engineer | `~/.claude/agents/computer-vision-engineer.md` | Computer Vision | S |
+| deep-dive | `~/.claude/skills/deep-dive/SKILL.md` (deep-dive research agent) | Research | S |
+| research MCP config | `~/.claude/plugins/claude-code-toolkit/mcp-configs/research.json` | Tool Usage | C (BGPT scientific-paper search, Brave Search, knowledge-graph memory, filesystem) |
+| research context | `~/.claude/plugins/claude-code-toolkit/contexts/research.md` | Context Engineering | C ("Do not recommend a tool based on popularity alone"; 30-minute time-box) |
+| claude-memory-kit / prompt-engineering / continuous-learning | `~/.claude/skills/claude-memory-kit/SKILL.md · ~/.claude/skills/prompt-engineering/SKILL.md · ~/.claude/skills/continuous-learning/SKILL.md` | Context Engineering / Prompt Engineering | C |
 
 Key verbatim rules (academic-researcher): PICO framing; reproducible search protocol; CONSORT/PRISMA/STROBE; effect sizes + CIs; 20% second-reviewer verification; primary-source/publication-bias/correlation-causation rules.
 
@@ -599,7 +614,7 @@ Key verbatim rules (academic-researcher): PICO framing; reproducible search prot
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
-| humanizer | `~/.claude/skills/hz-humanizer/SKILL.md` | Academic Writing (style) | C |
+| humanizer | `~/.claude/plugins/marketplaces/humanizer/SKILL.md` | Academic Writing (style) | C |
 
 Key verbatim rules: 26 anti-AI-tell patterns (staging, rhythm, inflation, formatting, chat leftovers, wrong reader); "Text written before November 30, 2022 is not AI-written"; "Humanizer edits for human readers. Getting past AI detectors is not a goal"; "Do not add a fact, name, number, date, quote, or citation unless it comes from the source or the user."
 
@@ -626,4 +641,4 @@ Not cloned as skills; use as a discovery index. Notable research-relevant entrie
 | agent-skills-for-context-engineering | per-repo (verify LICENSE) | 18 skills + researcher governance rules |
 | awesome-claude-code-toolkit | per-repo (verify LICENSE) | 135 agents; README counts drift (35 vs 41 skill dirs) |
 
-**Upstream update policy**: `for d in ~/.claude/upstream/*/; do git -C "$d" pull --ff-only; done`, then `~/.claude/upstream/sync-skills.sh --indexed`, then re-verify the paths referenced in Part 1 (verifier script trong `~/.claude/skills/research-orchestrator/INSTALL.md`).
+**Update policy** (per repo — chi tiết trong INSTALL.md): ARIS `git pull` + `tools/smart_update.sh --apply`; OR `npx @orchestra-research/ai-research-skills update`; ARF chạy lại one-liner `cp -R`; natureskills/Supervisor-Skills `git pull` + copy lại; các plugin `claude plugin update <plugin>` (sau update, re-verify paths Part 1); toolkit `git -C ~/.claude/plugins/claude-code-toolkit pull`.
