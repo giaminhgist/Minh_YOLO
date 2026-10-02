@@ -1,232 +1,237 @@
-INSTALL — Cài đặt 12 upstream skill repos vào Claude root (~/.claude)
-Runbook này để một Claude tương lai đọc và thực thi. Mục tiêu: cài toàn bộ skills từ 12 repos đã được duyệt vào user-level Claude Code (~/.claude/), giữ upstream repos nguyên vẹn (cập nhật bằng git pull), và đồng bộ path trong CLAUDE.md, research-orchestrator/SKILL.md, SKILL_INDEX.md.
+# INSTALL — Cài 12 upstream skill repos vào Claude root (`~/.claude`) theo đúng hướng dẫn của từng repo
 
-Layout sau khi cài
-Thứ	Vị trí
-12 upstream repos (source, git pull tại đây)	~/.claude/upstream/<repo>/
-Skills đã cài (namespaced)	~/.claude/skills/<prefix>-<skill>/SKILL.md
-Agents từ awesome-claude-code-toolkit	~/.claude/agents/tk-<name>.md
-ARIS shared-references (hỗ trợ ../shared-references)	~/.claude/skills/shared-references/
-ARIS helper resolution ($ARIS_REPO)	~/.aris/repo
-Global instructions	~/.claude/CLAUDE.md
-Orchestrator + index	~/.claude/skills/research-orchestrator/{SKILL.md,SKILL_INDEX.md}
-Prefix theo repo (bắt buộc — tránh trùng tên skill giữa các repo)
-Prefix	Repo
-aris	auto-claude-code-research-in-sleep
-or	AI-Research-SKILLs
-sp	superpowers
-arf	AI-research-feedback
-ns	natureskills
-aas	agentic-awesome-skills
-cs	claude-skills
-ss	Supervisor-Skills
-ctx	agent-skills-for-context-engineering
-tk	awesome-claude-code-toolkit
-hz	humanizer
-(không cài)	awesome-agent-skills — là curated list, không chứa skill code
-Ví dụ: upstream/Supervisor-Skills/skills/paper-writer/SKILL.md → ~/.claude/skills/ss-paper-writer/SKILL.md (frontmatter name được patch thành ss-paper-writer).
+Runbook cho máy mới / Claude tương lai. Mỗi repo được cài **đúng theo cách tác giả hướng dẫn** (đã thực thi và xác minh trên máy Linux, Claude Code ≥ 2.1.287). Sau khi cài, các path trong `SKILL_INDEX.md` / `SKILL.md` / `CLAUDE.md` trỏ đúng nơi cài thực tế.
 
-Bước 1 — Chuẩn bị upstream clones
-mkdir -p ~/.claude
-# Nếu clones cũ đã tồn tại ở /root/Agent/upstream, chuyển sang vị trí chuẩn (giữ .git để pull):
-[ -d /root/Agent/upstream ] && [ ! -d ~/.claude/upstream ] && mv /root/Agent/upstream ~/.claude/upstream || true
+## Layout sau khi cài
+
+| Nơi | Nội dung |
+|---|---|
+| `~/.claude/skills/<name>/` | Skills cài thẳng: ARIS (83+), OR (98, symlink), AI-research-feedback (11), natureskills (5), Supervisor-Skills (12), toolkit (4), + `shared-references/` của ARIS |
+| `~/.claude/plugins/marketplaces/<mp>/…` | Skills cài qua plugin marketplace (CS, ctx, AAS, humanizer) |
+| `~/.claude/plugins/cache/<mp>/<plugin>/<version>/…` | Bản cài thật của plugin (superpowers là URL-source nên chỉ có ở đây) |
+| `~/.claude/plugins/claude-code-toolkit/` | awesome-claude-code-toolkit (manual clone theo README) |
+| `~/.claude/agents/<name>.md` | Agents từ toolkit |
+| `~/.claude/upstream/<repo>/` | 12 upstream clones (source; `git pull` tại đây; không sửa) |
+| `~/.orchestra/skills/` | Nơi OR installer tải skills về (symlink vào `~/.claude/skills`) |
+| `~/.claude/skills/research-orchestrator/` | `SKILL.md` + `SKILL_INDEX.md` + `INSTALL.md` |
+| `~/.claude/CLAUDE.md` | Global instructions |
+
+## Bước 0 — Prerequisites
+
+```bash
+git --version && node --version    # Node ≥ 20 nếu muốn dùng `npx skills` (Node 18 lỗi node:util/styleText)
+claude --version                   # ≥ 2.1.142 (plugin humanizer yêu cầu)
+```
+
+## Bước 1 — Clone các repo không cài qua plugin vào `~/.claude/upstream`
+
+```bash
 mkdir -p ~/.claude/upstream && cd ~/.claude/upstream
+# (Nếu đã có clones cũ ở /root/Agent/upstream: mv /root/Agent/upstream ~/.claude/upstream)
 for repo in \
   wanshuiyin/auto-claude-code-research-in-sleep \
   Orchestra-Research/AI-Research-SKILLs \
-  obra/superpowers \
   claesbackman/AI-research-feedback \
   niuz257470-ctrl/natureskills \
-  sickn33/agentic-awesome-skills \
-  alirezarezvani/claude-skills \
   HKUSTDial/Supervisor-Skills \
-  VoltAgent/awesome-agent-skills \
-  blader/humanizer \
-  muratcankoylan/agent-skills-for-context-engineering \
-  rohitg00/awesome-claude-code-toolkit; do
+  VoltAgent/awesome-agent-skills; do
   name=$(basename "$repo")
-  [ -d "$name/.git" ] && { echo "exists: $name"; git -C "$name" pull --ff-only; continue; }
-  git clone --depth 1 "https://github.com/$repo.git" "$name"
+  [ -d "$name/.git" ] || git clone --depth 1 "https://github.com/$repo.git" "$name"
 done
+# 6 repo còn lại (superpowers, humanizer, ctx, toolkit, claude-skills, agentic-awesome-skills)
+# được Claude Code tự clone khi `claude plugin marketplace add …` — không clone tay.
+```
 
-Không clone lại nếu đã có (để git pull hoạt động). Không sửa bất kỳ file nào trong ~/.claude/upstream/.
+## Bước 2 — Cài từng repo theo hướng dẫn tác giả
 
-Bước 2 — Cài orchestrator và CLAUDE.md vào root
-Chạy từ thư mục chứa file INSTALL.md này (thường là <dự-án>/research-orchestrator/):
+### 2.1 ARIS — `cp -r skills/* ~/.claude/skills/` (global install chính thức trong README)
 
-PROJ="$(dirname "$(pwd)")"   # thư mục chứa research-orchestrator/ và CLAUDE.md
+```bash
+cp -r ~/.claude/upstream/auto-claude-code-research-in-sleep/skills/* ~/.claude/skills/
+# → ~/.claude/skills/<name>/SKILL.md + shared-references/ (83 skills + mirrors codex)
+# Codex reviewer (tùy chọn — các skill review cần nó):
+#   npm install -g @openai/codex && codex login
+#   claude mcp add codex -s user -- python3 "$HOME/.claude/upstream/auto-claude-code-research-in-sleep/mcp-servers/codex-exec/server.py"
+# Update: cd ~/.claude/upstream/auto-claude-code-research-in-sleep && git pull && bash tools/smart_update.sh --apply
+```
+
+### 2.2 OR — `npx @orchestra-research/ai-research-skills install --all`
+
+```bash
+npx @orchestra-research/ai-research-skills install --all
+# → tải skills về ~/.orchestra/skills/<category>/<name>/ và symlink vào ~/.claude/skills/<name>
+# Installer tải 95/98 skills; 3 skill ARA (compiler, research-manager, rigor-reviewer) bị thiếu —
+# bổ sung theo đúng layout của installer:
+for s in compiler research-manager rigor-reviewer; do
+  cp -R ~/.claude/upstream/AI-Research-SKILLs/22-agent-native-research-artifact/$s ~/.orchestra/skills/22-agent-native-research-artifact/ 2>/dev/null
+  ln -sf ~/.orchestra/skills/22-agent-native-research-artifact/$s ~/.claude/skills/$s
+done
+# Update: npx @orchestra-research/ai-research-skills update
+```
+
+### 2.3 superpowers — plugin (README: official marketplace)
+
+```bash
+claude plugin install superpowers@claude-plugins-official
+# (hoặc qua marketplace riêng: claude plugin marketplace add obra/superpowers-marketplace
+#  rồi claude plugin install superpowers@superpowers-marketplace)
+# → skills tại ~/.claude/plugins/cache/superpowers-marketplace/superpowers/<version>/skills/<name>/SKILL.md
+#   (path chứa version — sau `claude plugin update superpowers` phải re-verify paths trong SKILL_INDEX)
+```
+
+### 2.4 AI-research-feedback — one-liner chính thức trong README
+
+```bash
+git clone --depth 1 https://github.com/claesbackman/AI-research-feedback.git /tmp/airf && mkdir -p ~/.claude/skills && cp -R /tmp/airf/Skills/. ~/.claude/skills/ && rm -rf /tmp/airf
+# → ~/.claude/skills/<name>/SKILL.md (11 skills). Update: chạy lại chính dòng này.
+```
+
+### 2.5 natureskills — repo không có installer; copy các thư mục skill
+
+```bash
+cp -R ~/.claude/upstream/natureskills/nature-* ~/.claude/skills/
+# → ~/.claude/skills/nature-{figure,polishing,citation,data,paper2ppt}/SKILL.md. Update: git pull + copy lại.
+```
+
+### 2.6 agentic-awesome-skills — plugin (docs/users/plugins.md)
+
+```bash
+claude plugin marketplace add sickn33/agentic-awesome-skills
+claude plugin install agentic-awesome-skills@agentic-awesome-skills
+# → plugin-safe subset (2.471 skills) tại
+#   ~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/<name>/SKILL.md
+# ⚠ Danh sách skill của Claude Code sẽ rất dài — nếu muốn gọn, dùng specialized bundles
+#   (claude plugin list để xem, ví dụ agentic-bundle-data-analytics@agentic-awesome-skills).
+# Skill ngoài plugin (dos-verify-done-claims) → dùng từ ~/.claude/upstream/agentic-awesome-skills/skills/…
+# (marketplace clone đã nằm ở ~/.claude/plugins/marketplaces/agentic-awesome-skills)
+```
+
+### 2.7 claude-skills — plugin marketplace (INSTALLATION.md: `/plugin marketplace add alirezarezvani/claude-skills`)
+
+```bash
+claude plugin marketplace add alirezarezvani/claude-skills
+for p in engineering-skills engineering-advanced-skills ra-qm-skills research-ops-skills \
+         research-orchestrator litreview deep-research deepread grants pulse dossier \
+         compliance-os compliance-team-eu-ai-act compliance-team-iso42001 \
+         handoff-productivity markdown-html-skills; do
+  claude plugin install "$p@claude-code-skills"
+done
+# → skills tại ~/.claude/plugins/marketplaces/claude-code-skills/<domain>/…/SKILL.md
+# Lưu ý: loop-library, standards/ không có plugin.json → không phân phối qua marketplace;
+# tham chiếu trực tiếp ~/.claude/upstream/claude-skills/… (hoặc marketplace clone).
+# Update: claude plugin update <plugin>
+```
+
+### 2.8 Supervisor-Skills — README: "import vào AI assistant" (skills CLI cần Node ≥ 20)
+
+```bash
+# npx skills add HKUSTDial/Supervisor-Skills --global --agent claude-code   # nếu Node ≥ 20
+# Fallback (đã dùng trên Node 18) — copy theo đúng cách README mô tả:
+cp -R ~/.claude/upstream/Supervisor-Skills/skills/*/ ~/.claude/skills/
+# → ~/.claude/skills/<name>/SKILL.md (12 skills). Update: git pull + copy lại.
+# ⚠ License CC BY-NC-SA 4.0: dùng cá nhân OK; không tái phân phối/không thương mại.
+```
+
+### 2.9 awesome-agent-skills — curated list, **không có gì để cài**
+
+Chỉ là catalog các link officialskills.sh + GitHub. Dùng để khám phá skill ngoài 12 repo.
+
+### 2.10 humanizer — plugin (README: `/plugin marketplace add blader/humanizer`)
+
+```bash
+claude plugin marketplace add blader/humanizer
+claude plugin install humanizer@humanizer
+# → skill tại ~/.claude/plugins/marketplaces/humanizer/SKILL.md, gọi bằng /humanizer:humanizer
+# (Claude Code < 2.1.142: npx skills add blader/humanizer --global --agent claude-code)
+```
+
+### 2.11 agent-skills-for-context-engineering — plugin marketplace (README)
+
+```bash
+claude plugin marketplace add muratcankoylan/Agent-Skills-for-Context-Engineering
+claude plugin install context-engineering@context-engineering-marketplace
+# → ~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/<name>/SKILL.md (18 skills)
+```
+
+### 2.12 awesome-claude-code-toolkit — manual clone + installer (README Quick Install)
+
+```bash
+# ⚠ Marketplace của repo có bug manifest ("source: Invalid string: must start with './'")
+#   nên không cài plugin qua marketplace được — dùng route manual clone mà README đưa ra:
+git clone --depth 1 https://github.com/rohitg00/awesome-claude-code-toolkit.git ~/.claude/plugins/claude-code-toolkit
+cd ~/.claude/plugins/claude-code-toolkit && yes | bash setup/install.sh
+#   → 39 commands (~/.claude/commands/<category>/), hooks (~/.claude/hooks.json + 19 scripts —
+#     ⚠ review hooks.json trước khi dùng vì nó bật global), 15 rules, 7 templates, mcp-configs reference
+# Skills + agents (không nằm trong installer — copy thủ công theo cấu trúc repo):
+for s in deep-dive claude-memory-kit prompt-engineering continuous-learning; do
+  cp -R ~/.claude/plugins/claude-code-toolkit/skills/$s ~/.claude/skills/ 2>/dev/null
+done
+mkdir -p ~/.claude/agents
+cp ~/.claude/plugins/claude-code-toolkit/agents/research-analysis/academic-researcher.md ~/.claude/agents/
+cp ~/.claude/plugins/claude-code-toolkit/agents/data-ai/autoresearch-agent.md ~/.claude/agents/
+cp ~/.claude/plugins/claude-code-toolkit/agents/data-ai/computer-vision-engineer.md ~/.claude/agents/
+# Update: git -C ~/.claude/plugins/claude-code-toolkit pull (+ chạy lại setup/install.sh + copy lại skills/agents)
+```
+
+## Bước 3 — Cài orchestrator + CLAUDE.md vào root
+
+```bash
+# Từ thư mục dự án chứa research-orchestrator/ và CLAUDE.md:
+PROJ="$PWD"
 mkdir -p ~/.claude/skills/research-orchestrator
-cp "$PROJ/research-orchestrator/SKILL.md"      ~/.claude/skills/research-orchestrator/SKILL.md
+cp "$PROJ/research-orchestrator/SKILL.md"       ~/.claude/skills/research-orchestrator/SKILL.md
 cp "$PROJ/research-orchestrator/SKILL_INDEX.md" ~/.claude/skills/research-orchestrator/SKILL_INDEX.md
-[ -f ~/.claude/CLAUDE.md ] && cp ~/.claude/CLAUDE.md ~/.claude/CLAUDE.md.bak.$(date +%Y%m%d) && echo "backup CLAUDE.md cũ"
+cp "$PROJ/research-orchestrator/INSTALL.md"     ~/.claude/skills/research-orchestrator/INSTALL.md
+[ -f ~/.claude/CLAUDE.md ] && cp ~/.claude/CLAUDE.md ~/.claude/CLAUDE.md.bak.$(date +%Y%m%d)
 cp "$PROJ/CLAUDE.md" ~/.claude/CLAUDE.md
+```
 
-Bước 3 — Sync skills (script)
-Lưu script dưới đây thành ~/.claude/upstream/sync-skills.sh và chạy:
+## Bước 4 — Verify
 
-cat > ~/.claude/upstream/sync-skills.sh << 'SCRIPT'
-#!/usr/bin/env bash
-# Sync upstream skills -> ~/.claude/skills/<prefix>-<skill>/ (idempotent).
-# Modes: --indexed (default: mọi skill được tham chiếu trong SKILL_INDEX.md)
-#        --full    (mọi SKILL.md trong 12 repos — cảnh báo: hàng nghìn skills)
-#        --dry-run
-set -euo pipefail
-UP="$HOME/.claude/upstream"
-SK="$HOME/.claude/skills"
-AG="$HOME/.claude/agents"
-IDX="$SK/research-orchestrator/SKILL_INDEX.md"
-MODE="--indexed"
-for a in "$@"; do case "$a" in --full|--indexed|--dry-run) MODE="$a";; esac; done
-[ -f "$IDX" ] || { echo "Thiếu $IDX — chạy Bước 2 trước"; exit 1; }
-mkdir -p "$SK" "$AG"
+```bash
+claude plugin list            # phải thấy 20 plugin enabled
+ls ~/.claude/skills | wc -l   # ≈ 218 (87 ARIS + 98 OR + 11 ARF + 5 NS + 12 SS + 4 TK + shared-references + research-orchestrator)
+ls ~/.claude/agents           # academic-researcher.md, autoresearch-agent.md, computer-vision-engineer.md
 
-declare -A PREFIX=(
-  [auto-claude-code-research-in-sleep]=aris [AI-Research-SKILLs]=or
-  [superpowers]=sp [AI-research-feedback]=arf [natureskills]=ns
-  [agentic-awesome-skills]=aas [claude-skills]=cs [Supervisor-Skills]=ss
-  [agent-skills-for-context-engineering]=ctx [awesome-claude-code-toolkit]=tk
-  [humanizer]=hz
-)
-declare -A REPO=(
-  [aris]=auto-claude-code-research-in-sleep [or]=AI-Research-SKILLs
-  [sp]=superpowers [arf]=AI-research-feedback [ns]=natureskills
-  [aas]=agentic-awesome-skills [cs]=claude-skills [ss]=Supervisor-Skills
-  [ctx]=agent-skills-for-context-engineering [tk]=awesome-claude-code-toolkit
-  [hz]=humanizer
-)
-# tìm thư mục skill <leaf> dưới repo (bỏ qua mirror dirs .gemini/.codex/skills-codex* — chúng chứa symlink tương đối)
-find_leaf() { # repo leaf
-  local d
-  while IFS= read -r d; do
-    [ -f "$d/SKILL.md" ] && { echo "$d"; return 0; }
-  done < <(find "$UP/$1" -type d -name "$2" \
-    -not -path "*/.gemini/*" -not -path "*/.codex/*" -not -path "*/.cursor/*" \
-    -not -path "*/.claude-plugin/*" -not -path "*/skills-codex*" 2>/dev/null)
-  return 1
-}
-
-patch_frontmatter() { # file name
-  local f="$1" name="$2"
-  python3 - "$f" "$name" << 'EOF'
-import sys, re
-f, name = sys.argv[1], sys.argv[2]
-s = open(f, encoding="utf-8").read()
-m = re.match(r'(---\n)(.*?)(\n---)', s, re.S)
-if m:
-    fm = m.group(2)
-    fm = re.sub(r'^name:.*$', f'name: {name}', fm, count=1, flags=re.M) if re.search(r'^name:', fm, re.M) else fm + f'\nname: {name}'
-    open(f, "w", encoding="utf-8").write(s[:m.start(2)] + fm + s[m.end(2):])
-    print(f"  patched name: {name}")
-else:
-    print(f"  WARN no-frontmatter: {f}")
-EOF
-}
-
-install_skill() { # src_dir installed_name
-  local src="$1" name="$2"
-  [ -f "$src/SKILL.md" ] || { echo "  SKIP (no SKILL.md): $src"; return; }
-  echo "  $name <= $src"
-  if [ "$MODE" != "--dry-run" ]; then
-    rm -rf "$SK/$name"
-    cp -RL "$src" "$SK/$name"     # -L: dereference symlink để bản cài không phụ thuộc upstream tree
-    patch_frontmatter "$SK/$name/SKILL.md" "$name"
-  fi
-}
-
-COUNT=0
-if [ "$MODE" = "--full" ]; then
-  while IFS= read -r f; do
-    rel="${f#$UP/}"; repo="${rel%%/*}"
-    [ -z "${PREFIX[$repo]:-}" ] && continue
-    leaf="$(basename "$(dirname "$f")")"
-    install_skill "$(dirname "$f")" "${PREFIX[$repo]}-$leaf"
-    COUNT=$((COUNT+1))
-  done < <(find "$UP" -name SKILL.md -not -path "*/shared-references/*" -not -path "*/template/*" \
-    -not -path "*/.gemini/*" -not -path "*/.codex/*" -not -path "*/.cursor/*" -not -path "*/.claude-plugin/*" \
-    -not -path "*/skills-codex*" | sort)
-else
-  # SKILL_INDEX.md chứa INSTALLED paths (~/.claude/skills/<prefix>-<leaf>/SKILL.md)
-  # -> reverse-map: prefix -> repo, leaf -> thư mục skill trong upstream clone
-  while IFS= read -r p; do
-    p="${p#"${p%%[![:space:]]*}"}"; p="${p%"${p##*[![:space:]]}"}"
-    p="${p/#\~/$HOME}"    # normalize ~ (case pattern không tilde-expand theo $HOME env)
-    case "$p" in
-      "$SK"/*/SKILL.md)
-        base="$(basename "$(dirname "$p")")"     # <prefix>-<leaf>
-        pre="${base%%-*}"
-        [ -z "${REPO[$pre]:-}" ] && { echo "  SKIP (prefix lạ): $p"; continue; }
-        leaf="${base#$pre-}"
-        src="$(find_leaf "${REPO[$pre]}" "$leaf")" || { echo "  SKIP (không tìm thấy source): $p"; continue; }
-        install_skill "$src" "$base"
-        COUNT=$((COUNT+1));;
-    esac
-  done < <(grep -oE '`~/.claude/skills/[^`]+`' "$IDX" | tr -d '`' | tr '·' '\n' | sed -E 's/ \([^)]*\)$//' | sort -u)
-fi
-
-# tk agents -> ~/.claude/agents/tk-<name>.md
-while IFS= read -r p; do
-  p="${p#"${p%%[![:space:]]*}"}"; p="${p%"${p##*[![:space:]]}"}"
-  p="${p/#\~/$HOME}"
-  case "$p" in
-    "$AG"/tk-*.md)
-      name="$(basename "$p")"; plain="${name#tk-}"
-      src="$(find "$UP/awesome-claude-code-toolkit/agents" -name "$plain" | head -1)"
-      [ -z "$src" ] && { echo "  SKIP (không tìm thấy agent source): $p"; continue; }
-      echo "  $name <= $src"
-      [ "$MODE" = "--dry-run" ] || { cp "$src" "$AG/$name"; patch_frontmatter "$AG/$name" "$name"; }
-      COUNT=$((COUNT+1));;
-  esac
-done < <(grep -oE '`~/.claude/agents/tk-[^`]+`' "$IDX" | tr -d '`' | sort -u)
-
-# ARIS hỗ trợ: shared-references (sibling của aris-*) + $ARIS_REPO cho helper chain
-if [ "$MODE" != "--dry-run" ]; then
-  rm -rf "$SK/shared-references"
-  cp -R "$UP/auto-claude-code-research-in-sleep/skills/shared-references" "$SK/shared-references" 2>/dev/null || echo "WARN: thiếu ARIS shared-references"
-  mkdir -p "$HOME/.aris"
-  echo "$UP/auto-claude-code-research-in-sleep" > "$HOME/.aris/repo"
-fi
-
-echo "DONE mode=$MODE count=$COUNT"
-SCRIPT
-chmod +x ~/.claude/upstream/sync-skills.sh
-~/.claude/upstream/sync-skills.sh --indexed   # hoặc --full nếu muốn cài nguyên vẹn cả catalog repos
-
-Ghi chú:
-
---indexed (mặc định, khuyến nghị): cài ~300 skills được orchestrator tham chiếu — đúng tập mà routing sử dụng. --full: cài toàn bộ SKILL.md của cả 12 repos (agentic-awesome-skills có ~2.600 skills, claude-skills ~388 — danh sách skill của Claude Code sẽ rất dài, chỉ dùng khi thực sự cần).
-Script patch frontmatter name: của bản copy để khớp tên thư mục mới (upstream không bị sửa). Skill nào không có frontmatter hợp lệ sẽ được báo WARN no-frontmatter — Claude Code sẽ bỏ qua nó; xem và xử lý thủ công.
-ARIS: ~/.claude/skills/shared-references/ phục vụ các tham chiếu ../shared-references/ từ aris-*; ~/.aris/repo để helper resolution chain tìm thấy tools/. Các skill ARIS có reviewer cross-model (Codex MCP) vẫn cần đăng ký MCP server riêng theo README của ARIS (claude mcp add codex ... mcp-servers/codex-exec/server.py).
-Bước 4 — Verify sau khi cài
-echo "Tổng skills: $(ls -d ~/.claude/skills/*/ | wc -l)"
-echo "Tổng agents: $(ls ~/.claude/agents/tk-*.md 2>/dev/null | wc -l)"
-ls -d ~/.claude/skills/aris-novelty-check ~/.claude/skills/ss-paper-writer ~/.claude/skills/ns-nature-figure ~/.claude/skills/sp-systematic-debugging ~/.claude/skills/research-orchestrator
-head -6 ~/.claude/skills/ss-paper-writer/SKILL.md          # frontmatter name phải là ss-paper-writer
-grep -c '^name:' ~/.claude/skills/*/SKILL.md | grep -v ':1$' || echo "frontmatter OK"
-
-Kiểm tra nhất quán path giữa index và disk (mọi path ~/.claude/skills/... trong SKILL_INDEX.md phải tồn tại):
-
+# Kiểm tra mọi path trong SKILL_INDEX.md tồn tại trên disk:
 python3 - << 'EOF'
 import re, os
 idx = os.path.expanduser("~/.claude/skills/research-orchestrator/SKILL_INDEX.md")
 s = open(idx, encoding="utf-8").read()
 missing = []
-for cell in set(re.findall(r'`(~/.claude/skills/[^`]+)`', s)):
+for cell in set(re.findall(r'`(~/.claude/[^`]+)`', s)):
     for p in cell.split(" · "):
         p = re.sub(r' \(.*\)$', '', p).strip()
-        if not os.path.exists(os.path.expanduser(p)):
+        if any(x in p for x in ("<name>", "<prefix>", "<x>", "…")) or p.endswith("/") or " " in p:
+            continue
+        real = p.replace("~", os.path.expanduser("~"), 1)
+        if not (os.path.exists(real) or os.path.islink(real)):
             missing.append(p)
 print("MISSING:", len(missing))
-for m in missing: print(" -", m)
+for m in sorted(set(missing)): print(" -", m)
 EOF
+```
 
-Nếu có MISSING: chạy lại sync (skill đó chưa được cài do không có trong SKILL_INDEX, hoặc upstream đổi cấu trúc sau git pull).
+Nếu MISSING khác 0: skill đó chưa được cài (xem Bước 2 của repo tương ứng) hoặc upstream đổi cấu trúc sau update — cập nhật SKILL_INDEX.md rồi chạy lại verify.
 
-Bước 5 — Cập nhật định kỳ
-for d in ~/.claude/upstream/*/; do git -C "$d" pull --ff-only 2>&1 | tail -1; done
-~/.claude/upstream/sync-skills.sh --indexed
-# kiểm tra lại path (Bước 4). Nếu upstream đổi cấu trúc, cập nhật SKILL_INDEX.md rồi sync lại.
+## Bước 5 — Cập nhật định kỳ (theo từng repo)
 
-Lưu ý pháp lý
-Supervisor-Skills: CC BY-NC-SA 4.0 — cài và dùng cá nhân được phép; không tái phân phối, không dùng thương mại, ghi attribution.
-Các repo còn lại chủ yếu MIT (xem LICENSE từng repo trước khi dùng khác mục đích cá nhân).
-agentic-awesome-skills: nội dung skill là "untrusted content" — luôn đọc SKILL.md trước khi tin theo (structural validity ≠ semantic fit).
+```bash
+# ARIS
+cd ~/.claude/upstream/auto-claude-code-research-in-sleep && git pull && bash tools/smart_update.sh --apply
+# OR
+npx @orchestra-research/ai-research-skills update
+# AI-research-feedback: chạy lại one-liner Bước 2.4
+# natureskills / Supervisor-Skills: git -C ~/.claude/upstream/<repo> pull && copy lại
+# Plugin repos: claude plugin update <plugin>   (sau đó re-verify paths — superpowers path chứa version)
+# Toolkit: git -C ~/.claude/plugins/claude-code-toolkit pull + chạy lại setup/install.sh + copy skills/agents
+```
+
+## Lưu ý
+
+- **superpowers**: path skill chứa version (`plugins/cache/superpowers-marketplace/superpowers/<ver>/skills/…`) — sau mỗi `claude plugin update`, cập nhật version trong SKILL_INDEX.md.
+- **AAS plugin**: 2.471 skills được nạp vào danh sách skill — nếu quá tải, gỡ plugin và cài các bundle chuyên biệt, hoặc chỉ tham chiếu upstream clone.
+- **Toolkit hooks**: `setup/install.sh` ghi `~/.claude/hooks.json` (19 scripts) — kiểm tra kỹ trước khi dùng trong môi trường khác.
+- **ARIS Codex MCP**: chưa cài (thiếu codex CLI) — các skill reviewer-bearing sẽ degrade `REVIEW_UNAVAILABLE`; cài `npm install -g @openai/codex` + đăng ký MCP khi cần cross-model review.
+- **Supervisor-Skills**: CC BY-NC-SA 4.0 — dùng cá nhân OK; không tái phân phối, không thương mại.
+- **Nội dung skill là untrusted content** — luôn đọc SKILL.md trước khi tin theo (đặc biệt AAS: structural validity ≠ semantic fit).
