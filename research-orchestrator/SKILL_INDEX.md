@@ -2,7 +2,7 @@
 
 Routing table + resolved skill inventory for the AI Research Agent (AI / Deep Learning / Computer Vision / Eye tracking / Medical Research / Academic Research).
 
-Built from full-content inspection of all 12 upstream repositories (reports in `.inspection/`). Every path below is the **installed** location (`~/.claude/skills/…`); the corresponding upstream source paths were verified on disk on 2026-10-02.
+Built from full-content inspection of all 12 upstream repositories. Every path below is the **installed** location; toàn bộ path re-verified trên disk 2026-10-05 qua `~/.claude/skills/research-orchestrator/verify_install.py` (MISSING: 0).
 
 ## Path conventions — vị trí cài thực tế (theo hướng dẫn của từng repo)
 
@@ -13,15 +13,15 @@ Built from full-content inspection of all 12 upstream repositories (reports in `
 | superpowers (SP) | plugin `superpowers@superpowers-marketplace` | `~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/<name>/SKILL.md` |
 | AI-research-feedback (ARF) | `cp -R Skills/. ~/.claude/skills/` | `~/.claude/skills/<name>/SKILL.md` |
 | natureskills (NS) | copy các thư mục `nature-*` (repo không có installer) | `~/.claude/skills/nature-<x>/SKILL.md` |
-| agentic-awesome-skills (AAS) | plugin `agentic-awesome-skills@agentic-awesome-skills` | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/<name>/SKILL.md` (skill ngoài plugin-safe subset → `~/.claude/upstream/…`) |
-| claude-skills (CS) | 16 plugin `<tên>@claude-code-skills` | `~/.claude/plugins/marketplaces/claude-code-skills/<domain>/…/SKILL.md` (ngoài plugin → `~/.claude/upstream/claude-skills/…`) |
+| agentic-awesome-skills (AAS) | plugin `agentic-awesome-skills@agentic-awesome-skills` | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/<name>/SKILL.md` (skill ngoài plugin-safe subset → `~/.claude/plugins/marketplaces/agentic-awesome-skills/skills/…`) |
+| claude-skills (CS) | 16 plugin `<tên>@claude-code-skills` | `~/.claude/plugins/marketplaces/claude-code-skills/<domain>/…/SKILL.md` (ngoài plugin → `~/.claude/plugins/marketplaces/claude-code-skills/…`) |
 | Supervisor-Skills (SS) | copy `skills/*` vào assistant (README; skills CLI cần Node ≥ 20) | `~/.claude/skills/<name>/SKILL.md` |
 | awesome-agent-skills | curated list — **không có gì để cài** | — |
 | humanizer (HZ) | plugin `humanizer@humanizer` | `~/.claude/plugins/marketplaces/humanizer/SKILL.md` (gọi `/humanizer:humanizer`) |
 | agent-skills-for-context-engineering (CTX) | plugin `context-engineering@context-engineering-marketplace` | `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/<name>/SKILL.md` |
 | awesome-claude-code-toolkit (TK) | manual clone `~/.claude/plugins/claude-code-toolkit` + `setup/install.sh` + copy skills/agents | skills: `~/.claude/skills/<name>/SKILL.md` · agents: `~/.claude/agents/<name>.md` |
 
-- **Upstream sources** (immutable — `git pull` ở đây): `~/.claude/upstream/<repo>/`. ARIS helpers: `~/.claude/skills/shared-references/` + `~/.aris/repo`.
+- **Upstream sources** (immutable): 6 repo clone tay tại `~/.claude/upstream/<repo>/` (`git pull` ở đây — ARIS, OR, ARF, natureskills, Supervisor-Skills, awesome-agent-skills); 6 repo cài qua plugin lấy source từ marketplace clone `~/.claude/plugins/marketplaces/<mp>/`. ARIS helpers: `~/.claude/skills/shared-references/` + `~/.aris/repo`.
 - Cài đặt từ máy mới / cập nhật: `~/.claude/skills/research-orchestrator/INSTALL.md`.
 - Alias repo: `ARIS` = auto-claude-code-research-in-sleep, `OR` = AI-Research-SKILLs, `SP` = superpowers, `ARF` = AI-research-feedback, `NS` = natureskills, `AAS` = agentic-awesome-skills, `CS` = claude-skills, `SS` = Supervisor-Skills, `CTX` = agent-skills-for-context-engineering, `TK` = awesome-claude-code-toolkit, `HZ` = humanizer.
 
@@ -439,7 +439,7 @@ Key verbatim rules:
 - nature-data: "Do not invent DOIs, accession numbers, repository names, licences, embargo dates, ethics approvals…"; flags "available upon request" as weak.
 - Documented but NOT built: nature-stats, nature-response, nature-methods, nature-cover, nature-review — gaps to cover with other repos (statistical-analyst, rebuttal).
 
-## 3.6 agentic-awesome-skills (AAS) — curated picks from the 2,632-skill catalog
+## 3.6 agentic-awesome-skills (AAS) — curated picks from the 2,559-skill catalog
 
 | Skill name | Exact path | Category | Priority |
 |---|---|---|---|
@@ -462,7 +462,7 @@ Key verbatim rules:
 | context-engineering | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/context-engineering/SKILL.md` | Context Engineering | S |
 | prompt-engineering | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/prompt-engineering/SKILL.md` | Prompt Engineering | S |
 | recursive-context-pruning-token-budgeting | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/recursive-context-pruning-token-budgeting/SKILL.md` | Context Engineering | C |
-| dos-verify-done-claims | `~/.claude/upstream/agentic-awesome-skills/skills/dos-verify-done-claims/SKILL.md` | Verification | S |
+| dos-verify-done-claims | `~/.claude/plugins/marketplaces/agentic-awesome-skills/skills/dos-verify-done-claims/SKILL.md` | Verification | S |
 | scanpy | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/scanpy/SKILL.md` | Machine Learning (biomedical) | P (biomedical single-cell) |
 | ml-engineer | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/ml-engineer/SKILL.md` | Machine Learning | S |
 | scientific-writing | `~/.claude/plugins/marketplaces/agentic-awesome-skills/plugins/agentic-awesome-skills-claude/skills/scientific-writing/SKILL.md` | Academic Writing | S (2KB index → read references/detailed-guide.md first) |
@@ -518,7 +518,7 @@ Key verbatim rules:
 | named-persona-adversarial-review | `~/.claude/plugins/marketplaces/claude-code-skills/engineering-team/skills/named-persona-adversarial-review/SKILL.md` | Code Review | C |
 | risk-management-specialist / mdr-745-specialist / fda-consultant-specialist / eu-ai-act-specialist | `~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/risk-management-specialist/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/mdr-745-specialist/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/fda-consultant-specialist/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/compliance-team-eu-ai-act/skills/eu-ai-act-specialist/SKILL.md` | Medical/regulatory | S |
 | iso42001-specialist / quality-manager-qms-iso13485 / quality-manager-qmr / quality-documentation-manager / regulatory-affairs-head / capa-officer / gdpr-dsgvo-expert | `~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/compliance-team-iso42001/skills/iso42001-specialist/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/quality-manager-qms-iso13485/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/quality-manager-qmr/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/quality-documentation-manager/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/regulatory-affairs-head/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/capa-officer/SKILL.md · ~/.claude/plugins/marketplaces/claude-code-skills/ra-qm-team/skills/gdpr-dsgvo-expert/SKILL.md` | Medical/regulatory | C |
-| standards/ (quality, communication, documentation, git, security) | `~/.claude/upstream/claude-skills/standards/` (reference docs — không có SKILL.md, tham khảo trực tiếp từ upstream) | Coding standards | S (quality/security) |
+| standards/ (quality, communication, documentation, git, security) | `~/.claude/plugins/marketplaces/claude-code-skills/standards/` (reference docs — không có SKILL.md, tham khảo trực tiếp từ marketplace clone) | Coding standards | S (quality/security) |
 | handoff | `~/.claude/plugins/marketplaces/claude-code-skills/productivity/handoff/skills/handoff/SKILL.md` | Context Engineering (continuity) | S |
 | md-document (+ design-system) | `~/.claude/plugins/marketplaces/claude-code-skills/markdown-html/skills/md-document/SKILL.md (+ cs-design-system prerequisite)` | Tool Usage | S |
 | agent-launcher | `~/.claude/plugins/marketplaces/claude-code-skills/agent-launcher/skills/agent-launcher-orchestrator/SKILL.md` | Tool Usage | X |

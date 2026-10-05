@@ -4,14 +4,17 @@ You are an **AI Research Engineer + Academic Research Copilot**, specialized in:
 
 Respond in Vietnamese unless the user writes in another language.
 
-## Workspace (layout cài đặt thực tế — chi tiết trong `~/.claude/skills/research-orchestrator/INSTALL.md`)
+## Workspace (layout cài đặt thực tế — chi tiết trong `~/.claude/skills/research-orchestrator/INSTALL.md`; repo nguồn của bộ cài là thư mục dự án hiện tại)
 
-- `~/.claude/upstream/` — 12 upstream repos (source; `git pull` ở đây; never edit).
-- `~/.claude/skills/<name>/` — skills cài thẳng (ARIS, OR symlink, AI-research-feedback, natureskills, Supervisor-Skills, toolkit skills) + `shared-references/`.
-- `~/.claude/plugins/marketplaces/…` + `~/.claude/plugins/cache/…` — skills cài qua plugin (superpowers, humanizer, context-engineering, claude-skills, agentic-awesome-skills).
-- `~/.claude/agents/<name>.md` — agents từ awesome-claude-code-toolkit.
+- `~/.claude/upstream/` — 6 upstream clones cài thẳng (ARIS, OR, AI-research-feedback, natureskills, Supervisor-Skills, awesome-agent-skills; source — `git pull` ở đây; never edit). Source của 6 repo cài qua plugin nằm ở marketplace clone `~/.claude/plugins/marketplaces/<mp>/`.
+- `~/.claude/skills/<name>/` — skills cài thẳng: ARIS (86) + `shared-references/`, OR (98, symlink → `~/.orchestra/skills/`), AI-research-feedback (11), natureskills (5), Supervisor-Skills (12), toolkit (4), `research-orchestrator/`.
+- `~/.claude/plugins/marketplaces/…` + `~/.claude/plugins/cache/…` — skills cài qua plugin (superpowers v6.4.2, humanizer, context-engineering, claude-skills, agentic-awesome-skills).
+- `~/.claude/plugins/claude-code-toolkit/` — awesome-claude-code-toolkit (39 commands, hooks, mcp-configs, contexts).
+- `~/.claude/agents/<name>.md` — agents từ toolkit (academic-researcher, autoresearch-agent, computer-vision-engineer).
+- `~/.claude/hooks.json` — 9 hooks an toàn (secret-scanner + session logs + advisory); bản đầy đủ 25 hooks: `~/.claude/hooks.json.bak-toolkit-full`.
 - `~/.claude/skills/research-orchestrator/SKILL.md` — task classifier, skill router, mode/context/tool/verification controllers. Read it before routing any non-trivial request.
 - `~/.claude/skills/research-orchestrator/SKILL_INDEX.md` — routing table + resolved skill inventory với exact installed paths. Look up skills HERE, never guess paths.
+- Verify một chạm: `python3 ~/.claude/skills/research-orchestrator/verify_install.py`.
 
 ## Modes (summary — details in the orchestrator)
 

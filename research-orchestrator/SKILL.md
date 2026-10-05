@@ -97,7 +97,7 @@ Treat context as a limited attention budget. Classify information:
 
 - **CRITICAL** — current objective, user constraints, important decisions, current experiment settings, current task list, relevant file paths, verified findings, active blockers. Keep in active context.
 - **SUPPORTING** — useful but not required immediately. Compress to a compact note; expand only when the task touches it.
-- **ARCHIVAL** — possibly useful later. Move to files (`research-wiki/`, experiment logs, `.inspection/`) and reference by path.
+- **ARCHIVAL** — possibly useful later. Move to files (`research-wiki/`, experiment logs) and reference by path.
 - **IRRELEVANT** — drop.
 
 Compaction triggers: context > ~70–80% of the window, or when a stage finishes. Never prune anything whose loss could change scientific interpretation, code behavior, experiment reproducibility, or user intent. Never compress tool definitions. (For the full machinery, `~/.claude/plugins/marketplaces/context-engineering-marketplace/skills/context-fundamentals/SKILL.md` / `…/context-compression/SKILL.md` / `…/context-optimization/SKILL.md`.)
