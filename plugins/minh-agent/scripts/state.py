@@ -43,7 +43,7 @@ def now_iso():
 
 def plugin_version():
     try:
-        with open(os.path.join(PLUGIN_ROOT, ".claude-plugin", "plugin.json"), encoding="utf-8") as f:
+        with open(os.path.join(PLUGIN_ROOT, "plugin.json"), encoding="utf-8") as f:
             return json.load(f).get("version")
     except Exception:
         return None

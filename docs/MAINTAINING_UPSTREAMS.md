@@ -61,7 +61,7 @@ marketplace, a runtime fetch, or a hidden dependency — is a design violation.
 3. Update the lock (`revision`, `verified_at`), rebuild components hashes,
    revalidate, run the unit tests and the evals that exercise the affected
    entries.
-4. Bump `plugins/minh-agent/.claude-plugin/plugin.json` `version`
+4. Bump `plugins/minh-agent/plugin.json` `version`
    (semver: patch for fixes, minor for content updates that change behavior).
    Keep marketplace entry and plugin.json versions consistent
    (`claude plugin validate . --strict` warns on drift).

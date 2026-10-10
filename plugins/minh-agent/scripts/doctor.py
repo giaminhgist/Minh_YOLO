@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import minh_registry  # noqa: E402
 
 PLUGIN_ROOT = minh_registry.PLUGIN_ROOT
-PLUGIN_JSON = os.path.join(PLUGIN_ROOT, ".claude-plugin", "plugin.json")
+PLUGIN_JSON = os.path.join(PLUGIN_ROOT, "plugin.json")
 EXPECTED_NAME = "minh-agent"
 
 # capability → {tool: (required, hint)}
@@ -78,7 +78,7 @@ def check_plugin_json():
         return findings, None
     except json.JSONDecodeError as ex:
         findings.append({"level": "error", "check": "manifest",
-                         "message": f".claude-plugin/plugin.json invalid JSON: {ex}"})
+                         "message": f"plugin.json invalid JSON: {ex}"})
         return findings, None
     if data.get("name") != EXPECTED_NAME:
         findings.append({"level": "error", "check": "manifest",

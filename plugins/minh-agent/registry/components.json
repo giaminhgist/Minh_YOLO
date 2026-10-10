@@ -894,7 +894,7 @@
       "license": "MIT",
       "license_file": null,
       "local_path": "scripts/doctor.py",
-      "sha256": "974035aec52c6cc7d3202a94f0d08603e78ab45ea82e5b6bce1afdcac04ee904",
+      "sha256": "79a9fb8619a94b932ce94a928e57e76f96c6a7f6833985172e209214352e128b",
       "dependencies": [
         "scripts/minh_registry.py"
       ],
@@ -926,7 +926,7 @@
       "license": "MIT",
       "license_file": null,
       "local_path": "scripts/state.py",
-      "sha256": "0020e465efb50ecb680b49183b08e32dfb127c94d88c5802c2c2eb95c358ca05",
+      "sha256": "293fce9c86e12676ba0f620b58f86f2d166fba93c0a6e1707daec93ab51cfb2f",
       "dependencies": [],
       "local_changes": "Native stdlib-only script authored by the minh-agent maintainer."
     },

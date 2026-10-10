@@ -77,7 +77,8 @@ and capability→resource mapping.
 
 - Marketplace manifest: `.claude-plugin/marketplace.json` (repo root) — one
   plugin entry, source `./plugins/minh-agent`.
-- Plugin manifest: `plugins/minh-agent/.claude-plugin/plugin.json`.
+- Plugin manifest: `plugins/minh-agent/plugin.json` (plugin dir root; a nested
+  `.claude-plugin/` dir here is not resolved by the CLI).
 - Install: `claude plugin marketplace add giaminhgist/Minh_YOLO` +
   `claude plugin install minh-agent@minh-yolo --scope user`. Local try-out:
   `claude --plugin-dir ./plugins/minh-agent`. Isolated test installs use

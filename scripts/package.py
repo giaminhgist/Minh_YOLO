@@ -24,7 +24,7 @@ def main():
     ap.add_argument("--out", default=os.path.join(REPO_ROOT, "dist"))
     args = ap.parse_args()
 
-    manifest = json.load(open(os.path.join(PLUGIN_ROOT, ".claude-plugin", "plugin.json"), encoding="utf-8"))
+    manifest = json.load(open(os.path.join(PLUGIN_ROOT, "plugin.json"), encoding="utf-8"))
     version = manifest["version"]
     os.makedirs(args.out, exist_ok=True)
     target = os.path.join(args.out, f"minh-agent-{version}.zip")
