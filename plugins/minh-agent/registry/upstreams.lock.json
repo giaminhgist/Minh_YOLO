@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "note": "Pinned direct skill upstreams for minh-agent. Exactly five entries. Each revision is a full commit SHA verified against GitHub at fetch time; license is read from the tree at that revision. End users never need to clone these repositories.",
+  "generated_at": "2026-10-10",
+  "upstreams": [
+    {
+      "id": "aris",
+      "name": "Auto-claude-code-research-in-sleep",
+      "repository": "https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep.git",
+      "revision": "26b95cfa0d8747078e9e43b42e20952709e561b8",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "purpose": "Research methodology: literature, novelty, experiment planning, analysis, paper/grant writing, source verification.",
+      "verified_at": "2026-10-10"
+    },
+    {
+      "id": "superpowers",
+      "name": "superpowers",
+      "repository": "https://github.com/obra/superpowers.git",
+      "revision": "8ca22dba9a94f28898bbce59f2537ff4d87c747d",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "purpose": "Structured coding workflows: proportionate planning, implementation, debugging, code review, verification.",
+      "verified_at": "2026-10-10"
+    },
+    {
+      "id": "orchestra",
+      "name": "AI-Research-SKILLs",
+      "repository": "https://github.com/Orchestra-Research/AI-Research-SKILLs.git",
+      "revision": "773a52944ba4747a18bd4ae9ade53fff041adcbc",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "purpose": "ML engineering depth (per-stack), ML paper writing, academic plotting.",
+      "verified_at": "2026-10-10"
+    },
+    {
+      "id": "claude_skills",
+      "name": "claude-skills",
+      "repository": "https://github.com/alirezarezvani/claude-skills.git",
+      "revision": "19392f7a08264ed00486a251f5b2098321771f94",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "purpose": "Deep document reading (deepread), prompt evaluation, selected engineering workflows.",
+      "verified_at": "2026-10-10"
+    },
+    {
+      "id": "context_engineering",
+      "name": "Agent-Skills-for-Context-Engineering",
+      "repository": "https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering.git",
+      "revision": "58b55a8921758d13453b440704fb1b5b208c0b0e",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "purpose": "File-backed context, state save/restore, checked compression, evaluation for the agent itself.",
+      "verified_at": "2026-10-10"
+    }
+  ]
+}

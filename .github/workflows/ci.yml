@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  deterministic-checks:
+    # Structural + script checks only: no model calls, no credentials, no spend.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Unit tests (state CLI, registry validator, CLI probe)
+        run: python3 -m unittest discover -s tests -v
+      - name: Registry validation (5 upstreams · components · capabilities)
+        run: python3 plugins/minh-agent/scripts/validate_registry.py
+      - name: Doctor (installable verdict)
+        run: python3 plugins/minh-agent/scripts/doctor.py
+      - name: Forbidden-path scan (no maintainer cache / home paths in shipped files)
+        run: |
+          if grep -rnE '\.cache/upstreams|MINH_UPSTREAM_CACHE|~/.claude|\.aris' plugins/minh-agent/ \
+              --include='*.py' --include='*.md' --include='*.json' \
+              | grep -v 'registry/components.json' | grep -v 'evals/results/' \
+              | grep -v 'THIRD_PARTY_NOTICES.md'; then
+            echo "FAIL — forbidden runtime path references found"
+            exit 1
+          fi
+          echo "scan clean"
+      - name: Plugin + marketplace manifest validation (strict)
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate . --strict
+          claude plugin validate ./plugins/minh-agent --strict

@@ -1,2 +1,19 @@
+# Python
 __pycache__/
 *.pyc
+
+# Maintainer-only caches and workspace (never shipped in the plugin)
+.cache/
+.minh-agent/
+*.tmp
+*.bak
+
+# Test/CI artifacts
+tests/_out/
+evals/_runs/
+coverage/
+htmlcov/
+plugins/minh-agent/evals/results/
+
+# Build artifacts
+dist/

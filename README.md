@@ -1,45 +1,89 @@
-# Minh_YOLO — Research Skills Orchestrator
+# Minh_YOLO — the `minh-agent` plugin for Claude Code
 
-Bộ cài + router cho **AI Research Agent** (AI / ML / DL / CV / Medical AI / Eye tracking / Academic Research) trên Claude Code: 12 upstream skill repos (~2.9k skills) + orchestrator với routing table, mode controller, và verification gate.
+A single Claude Code plugin that ships curated research + coding workflows for
+AI/ML/DL/CV/biomedical researchers. One install; no upstream skill repositories
+to clone, no marketplaces to stack, nothing downloaded at runtime.
 
-## Nội dung bộ cài
+- **Plugin:** `minh-agent` · **Marketplace:** `minh-yolo` (this repository)
+- **12 entry skills** with direct slash namespaces: `/minh-agent:run`,
+  `/minh-agent:plan`, `/minh-agent:code`, `/minh-agent:debug`, `/minh-agent:review`,
+  `/minh-agent:research`, `/minh-agent:read`, `/minh-agent:experiment`,
+  `/minh-agent:write`, `/minh-agent:figure`, `/minh-agent:resume`,
+  `/minh-agent:doctor`
+- **STANDALONE is the default.** Each entry does exactly the requested task.
+  Multi-step workflows run only when explicitly requested, with recorded state,
+  budget, and stop conditions (see `/minh-agent:run`).
+- **Provenance-tracked content.** Workflows are selected and adapted from exactly
+  five pinned upstream skill repositories (ARIS, superpowers, Orchestra-Research,
+  claude-skills, Context Engineering — see `THIRD_PARTY_NOTICES.md` and
+  `plugins/minh-agent/registry/`). Every component records source, revision,
+  license, and local changes. Runtime never fetches skill code.
 
-| File | Vai trò |
-|---|---|
-| `INSTALL.md` | Runbook cài 12 repo đúng cách từng repo — chạy bằng **một prompt** trên máy mới |
-| `CLAUDE.md` | Global instructions: research integrity, routing, statistics, paper/grant discipline |
-| `research-orchestrator/SKILL.md` | Task classifier + skill router + mode/context/tool/verification controllers |
-| `research-orchestrator/SKILL_INDEX.md` | Routing table + inventory với exact installed paths (verified: MISSING = 0) |
-| `research-orchestrator/verify_install.py` | Gate kiểm tra toàn bộ path/symlinks/hooks/counts sau khi cài |
-| `research-orchestrator/configure_hooks.py` | Trim hooks.json về 9 hooks an toàn (`--full` để khôi phục 25 hooks) |
-
-## Cài trên máy mới — một prompt
+## Install
 
 ```bash
-git clone <repo-url> && cd <repo>
-# mở Claude Code tại đây rồi gửi prompt:
-#   "Cài đặt toàn bộ môi trường research skills theo INSTALL.md trong repo:
-#    chạy tuần tự Bước 0 → 4, không dừng để hỏi trừ khi gặp lỗi,
-#    rồi chạy verify_install.py và báo kết quả PASS/FAIL."
+claude plugin marketplace add giaminhgist/Minh_YOLO
+claude plugin install minh-agent@minh-yolo --scope user
 ```
 
-Kết quả mong đợi: 20 plugins enabled · ~218 skills trong `~/.claude/skills/` · 3 agents · `verify_install.py` → **PASS**.
+One line on Claude Code ≥ 2.1.275:
 
-## 12 upstream repos
+```
+/plugin install minh-agent --marketplace giaminhgist/Minh_YOLO
+```
 
-| # | Repo | Cách cài |
+Try it without installing (this session only):
+
+```bash
+claude --plugin-dir ./plugins/minh-agent
+```
+
+Then `/minh-agent:doctor` to check your environment. Full instructions (local
+install, update, uninstall, rollback, requirements) in [INSTALL.md](INSTALL.md).
+
+## What each entry does
+
+| Entry | Use for | Output |
 |---|---|---|
-| 1 | auto-claude-code-research-in-sleep (ARIS) | copy `skills/*` |
-| 2 | Orchestra-Research/AI-Research-SKILLs (OR) | `npx … install --all` |
-| 3 | obra/superpowers (SP) | plugin `superpowers-marketplace` |
-| 4 | claesbackman/AI-research-feedback (ARF) | copy `Skills/` |
-| 5 | niuz257470-ctrl/natureskills (NS) | copy `nature-*` |
-| 6 | sickn33/agentic-awesome-skills (AAS) | plugin marketplace |
-| 7 | alirezarezvani/claude-skills (CS) | 16 plugin `@claude-code-skills` |
-| 8 | HKUSTDial/Supervisor-Skills (SS) | copy `skills/*` |
-| 9 | VoltAgent/awesome-agent-skills | curated list — không cài |
-| 10 | blader/humanizer (HZ) | plugin marketplace |
-| 11 | muratcankoylan/Agent-Skills-for-Context-Engineering (CTX) | plugin marketplace |
-| 12 | rohitg00/awesome-claude-code-toolkit (TK) | manual clone + installer |
+| `run` | anything unclassified; workflow orchestration when explicitly asked | one primary workflow, executed and verified |
+| `plan` | design/spec/implementation plan before code | reviewable plan with per-task verification; no code changed |
+| `code` | implement a feature/refactor/fix | code + test evidence; surgical scope |
+| `debug` | bug/error/test failure | root cause + fix + regression proof |
+| `review` | review a diff/PR/branch | severity-ranked findings with location + evidence; never fixes |
+| `research` | literature questions, novelty, ideas | sourced synthesis; fact/inference/gap separated |
+| `read` | deep reading of a supplied document | claims/evidence/limits of what was actually read |
+| `experiment` | design (default) or run/analyze experiments | protocol with controls/budget; real saved results when run |
+| `write` | papers, grants, technical docs from evidence | evidence-gated draft; missing parts marked, never invented |
+| `figure` | scientific figures from your data | figure + reproducible script + statistics legend |
+| `resume` | continue a previous run | checkpoint reconciled with workspace; stale parts re-verified |
+| `doctor` | plugin health | installable vs runtime-ready verdicts |
 
-License của từng repo khác nhau (MIT, CC BY-NC-SA 4.0, per-repo) — xem Part 4 trong SKILL_INDEX.md.
+## Requirements
+
+- Claude Code ≥ 2.1.269 (plugin manifest, `claude plugin` commands; tested on
+  2.1.296). Python ≥ 3.9 for the bundled scripts (stdlib only).
+- Optional tools per capability (declared, never auto-installed): `git`
+  (required for code/debug/review/resume), `pdftotext` (PDF reading),
+  `pdflatex` (paper compilation), `matplotlib` (figure rendering),
+  network + `curl` (live literature search). `/minh-agent:doctor` tells you
+  exactly which capability degrades when one is missing.
+
+## Repo layout
+
+```
+.claude-plugin/marketplace.json      marketplace "minh-yolo" (one plugin)
+plugins/minh-agent/                  the plugin
+  skills/<entry>/SKILL.md            12 entry skills
+  resources/<capability>/            curated workflows (provenance-tracked)
+  registry/                          upstreams.lock.json · components.json · capabilities.json
+  scripts/                           state.py · doctor.py · validate_registry.py
+  agents/reviewer.md                 fresh-context reviewer
+  evals/                             behavior eval suite for `claude plugin eval`
+  licenses/ · THIRD_PARTY_NOTICES.md
+scripts/                             maintainer tools (fetch, merge, rehash, package)
+tests/                               unit tests (stdlib unittest)
+docs/                                architecture, migration, maintaining, report
+```
+
+Developers: see [CLAUDE.md](CLAUDE.md). Previously installed the old multi-upstream
+kit? See [docs/MIGRATION.md](docs/MIGRATION.md).

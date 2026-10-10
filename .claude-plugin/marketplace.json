@@ -1,0 +1,14 @@
+{
+  "name": "minh-yolo",
+  "owner": {
+    "name": "Minh"
+  },
+  "description": "Minh's curated research and coding workflows for Claude Code, distributed as the single minh-agent plugin.",
+  "plugins": [
+    {
+      "name": "minh-agent",
+      "source": "./plugins/minh-agent",
+      "description": "Curated research and coding workflows for Claude Code: 12 entry skills with selected, provenance-tracked workflows from five pinned upstream skill repositories."
+    }
+  ]
+}

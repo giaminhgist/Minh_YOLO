@@ -1,0 +1,11 @@
+{
+  "name": "minh-agent",
+  "version": "0.1.0",
+  "description": "Curated research and coding workflows for Claude Code: 12 entry skills (run/plan/code/debug/review/research/read/experiment/write/figure/resume/doctor) with selected, provenance-tracked workflows from five pinned upstream skill repositories.",
+  "author": {
+    "name": "Minh"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/giaminhgist/Minh_YOLO",
+  "keywords": ["research", "coding", "machine-learning", "paper-writing", "experiments", "code-review", "debugging", "figures"]
+}
